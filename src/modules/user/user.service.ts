@@ -13,6 +13,14 @@ export class UserService {
     return this.userRepository.getById(id);
   }
 
+  async getAccountByUsername(username: string) {
+    return this.userRepository.getAccountByUsername(username);
+  }
+
+  async getAccountByEmail(email: string) {
+    return this.userRepository.getAccountByEmail(email);
+  }
+
   async getByUsername(username: string) {
     return this.userRepository.getByUsername(username);
   }

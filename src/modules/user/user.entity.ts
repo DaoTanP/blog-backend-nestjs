@@ -23,7 +23,7 @@ export class User extends BaseEntity {
   @Column('varchar', { nullable: false, length: 255 })
   username: string;
 
-  @Column('varchar', { nullable: false, length: 255 })
+  @Column('varchar', { nullable: false, length: 255, select: false })
   password: string;
 
   @Column('varchar', { nullable: false, length: 255 })

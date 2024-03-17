@@ -15,14 +15,17 @@ export class AuthService {
   async validateUser(signInDTO: SignInDTO) {
     const byEmail = isEmail(signInDTO.usernameOrEmail);
 
-    const user = await (byEmail
-      ? this.userService.getByEmail(signInDTO.usernameOrEmail)
-      : this.userService.getByUsername(signInDTO.usernameOrEmail));
+    const account = await (byEmail
+      ? this.userService.getAccountByEmail(signInDTO.usernameOrEmail)
+      : this.userService.getAccountByUsername(signInDTO.usernameOrEmail));
 
-    if (!user || !(await bcrypt.compare(signInDTO.password, user.password)))
+    if (
+      !account ||
+      !(await bcrypt.compare(signInDTO.password, account.password))
+    )
       return null;
 
-    return user;
+    return this.userService.getById(account.id);
   }
 
   generateToken(user: any) {
