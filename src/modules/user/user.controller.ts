@@ -18,12 +18,12 @@ export class UserController {
   }
 
   @Get('checkUsernameAvailability')
-  async checkUsernameAvailability(@Query('u') username: string) {
+  async checkUsernameAvailability(@Query('username') username: string) {
     return this.userService.isUsernameAvailable(username);
   }
 
   @Get('checkEmailAvailability')
-  async checkEmailAvailability(@Query('e') email: string) {
+  async checkEmailAvailability(@Query('email') email: string) {
     return this.userService.isEmailAvailable(email);
   }
 }
