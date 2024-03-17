@@ -1,14 +1,16 @@
 import { Module } from '@nestjs/common';
-import { Role } from './role.entity';
-import { UserRole } from './userRole.entity';
-import { TypeOrmModule } from '@nestjs/typeorm';
 import { AuthController } from './auth.controller';
-import { RoleRepository } from './role.repository';
 import { AuthService } from './auth.service';
+import { UserModule } from '../user/user.module';
+import { PassportModule } from '@nestjs/passport';
+import { JwtModule } from '@nestjs/jwt';
+import { jwtConfig } from 'src/shared/config/jwt.config';
+import { LocalStrategy } from './local.strategy';
+import { JwtStrategy } from './jwt.strategy';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Role, UserRole])],
+  imports: [UserModule, PassportModule, JwtModule.registerAsync(jwtConfig)],
   controllers: [AuthController],
-  providers: [RoleRepository, AuthService],
+  providers: [AuthService, LocalStrategy, JwtStrategy],
 })
 export class AuthModule {}
