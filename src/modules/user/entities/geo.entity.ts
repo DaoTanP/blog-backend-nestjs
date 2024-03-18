@@ -1,25 +1,15 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  BaseEntity,
-  OneToMany,
-} from 'typeorm';
-import { User } from './user.entity';
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from 'typeorm';
 
-@Entity('company')
-export class Company extends BaseEntity {
+@Entity('geo')
+export class Geo extends BaseEntity {
   @PrimaryGeneratedColumn('increment', { type: 'bigint', unsigned: true })
   id: number;
 
   @Column('varchar', { length: 255 })
-  name: string;
-
-  @Column('varchar', { name: 'catch_phrase', length: 255 })
-  catchPhrase: string;
+  lat: string;
 
   @Column('varchar', { length: 255 })
-  bs: string;
+  lng: string;
 
   @Column('timestamp', {
     name: 'created_at',
@@ -38,7 +28,4 @@ export class Company extends BaseEntity {
 
   @Column('bigint', { name: 'updated_by', unsigned: true, default: null })
   updatedBy: Date;
-
-  @OneToMany(() => User, (user: User) => user.company)
-  users: User[];
 }
