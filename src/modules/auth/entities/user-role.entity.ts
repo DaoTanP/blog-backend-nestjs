@@ -5,7 +5,7 @@ import {
   OneToOne,
   JoinColumn,
 } from 'typeorm';
-import { User } from '../user/user.entity';
+import { User } from '@modules/user/entities/user.entity';
 import { Role } from './role.entity';
 
 @Entity('user_role')

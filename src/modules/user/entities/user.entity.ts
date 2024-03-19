@@ -5,9 +5,11 @@ import {
   BaseEntity,
   ManyToOne,
   JoinColumn,
+  BeforeInsert,
 } from 'typeorm';
 import { Address } from './address.entity';
 import { Company } from './company.entity';
+import * as bcrypt from 'bcrypt';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -38,12 +40,14 @@ export class User extends BaseEntity {
   @Column('timestamp', {
     name: 'created_at',
     default: () => 'CURRENT_TIMESTAMP',
+    select: false,
   })
   createdAt: Date;
 
   @Column('timestamp', {
     name: 'updated_at',
     default: () => 'CURRENT_TIMESTAMP',
+    select: false,
   })
   updatedAt: Date;
 
@@ -58,4 +62,10 @@ export class User extends BaseEntity {
   })
   @JoinColumn({ name: 'company_id', foreignKeyConstraintName: 'fk_company' })
   company: Company;
+
+  @BeforeInsert()
+  async hashPassword(password: string): Promise<void> {
+    const salt = await bcrypt.genSalt();
+    this.password = await bcrypt.hash(password || this.password, salt);
+  }
 }

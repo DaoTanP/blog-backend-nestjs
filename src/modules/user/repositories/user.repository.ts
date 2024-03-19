@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, FindOptionsRelations, Repository } from 'typeorm';
-import { User } from './user.entity';
+import { User } from '@modules/user/entities/user.entity';
 
 @Injectable()
 export class UserRepository extends Repository<User> {
@@ -13,39 +13,39 @@ export class UserRepository extends Repository<User> {
     super(User, dataSource.createEntityManager());
   }
 
-  async getAll() {
+  async getAll(): Promise<User[]> {
     return this.find();
   }
 
-  async getById(id: number) {
+  async getById(id: number): Promise<User> {
     return this.findOne({
       where: { id },
       relations: this.findOptionRelations,
     });
   }
 
-  async getAccountByUsername(username: string) {
+  async getAccountByUsername(username: string): Promise<User> {
     return this.findOne({
       where: { username },
       select: { username: true, password: true },
     });
   }
 
-  async getAccountByEmail(email: string) {
+  async getAccountByEmail(email: string): Promise<User> {
     return this.findOne({
       where: { email },
       select: { email: true, password: true },
     });
   }
 
-  async getByUsername(username: string) {
+  async getByUsername(username: string): Promise<User> {
     return this.findOne({
       where: { username },
       relations: this.findOptionRelations,
     });
   }
 
-  async getByEmail(email: string) {
+  async getByEmail(email: string): Promise<User> {
     return this.findOne({
       where: { email },
       relations: this.findOptionRelations,
