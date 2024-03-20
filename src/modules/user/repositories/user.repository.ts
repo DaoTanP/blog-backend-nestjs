@@ -1,15 +1,26 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, FindOptionsRelations, Repository } from 'typeorm';
+import {
+  DataSource,
+  DeleteResult,
+  FindOptionsRelations,
+  Repository,
+} from 'typeorm';
 import { User } from '@modules/user/entities/user.entity';
+import { UserRoleService } from '@modules/auth/services/user-role.service';
 
 @Injectable()
 export class UserRepository extends Repository<User> {
   private findOptionRelations: FindOptionsRelations<User> = {
-    address: true,
+    address: {
+      geo: true,
+    },
     company: true,
   };
 
-  constructor(private dataSource: DataSource) {
+  constructor(
+    private dataSource: DataSource,
+    private readonly userRoleService: UserRoleService,
+  ) {
     super(User, dataSource.createEntityManager());
   }
 
@@ -27,14 +38,14 @@ export class UserRepository extends Repository<User> {
   async getAccountByUsername(username: string): Promise<User> {
     return this.findOne({
       where: { username },
-      select: { username: true, password: true },
+      select: { id: true, username: true, password: true },
     });
   }
 
   async getAccountByEmail(email: string): Promise<User> {
     return this.findOne({
       where: { email },
-      select: { email: true, password: true },
+      select: { id: true, email: true, password: true },
     });
   }
 
@@ -50,5 +61,12 @@ export class UserRepository extends Repository<User> {
       where: { email },
       relations: this.findOptionRelations,
     });
+  }
+
+  async deleteById(id: number): Promise<boolean> {
+    const deleteResult: DeleteResult = await this.delete({ id });
+    if (deleteResult.affected === 0) return false;
+
+    return true;
   }
 }
