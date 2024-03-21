@@ -11,6 +11,6 @@ import { UserRoleRepository } from '@/modules/auth/repositories/user-role.reposi
   imports: [TypeOrmModule.forFeature([User])],
   controllers: [UserController],
   providers: [UserService, UserRepository, UserRoleService, UserRoleRepository],
-  exports: [UserService],
+  exports: [UserService,UserRepository],
 })
 export class UserModule {}

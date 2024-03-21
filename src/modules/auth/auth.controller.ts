@@ -9,14 +9,16 @@ import { AuthService } from './services/auth.service';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { Request } from 'express';
 import { Messages } from '@/shared/constants/messages.constant';
+import { Body } from '@nestjs/common';
+import { SignUpDTO } from './dto/signUp.dto';
 
 @Controller('api/v1/auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('signup')
-  async signUp() {
-    return 'signup';
+  async signup(@Body() signUpDTO: SignUpDTO): Promise<Object> {
+    return await this.authService.signUp(signUpDTO);
   }
 
   @Post('signin')
