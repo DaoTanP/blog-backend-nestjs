@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from 'typeorm';
-import { UserRoles } from '@modules/auth/enums/role.enum';
+import { UserRoles } from '@shared/constants/role.enum';
 
 @Entity('roles')
 export class Role extends BaseEntity {

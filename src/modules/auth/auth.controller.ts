@@ -6,9 +6,9 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './services/auth.service';
-import { LocalAuthGuard } from './guards/local-auth.guard';
+import { LocalAuthGuard } from '@shared/guards/local-auth.guard';
 import { Request } from 'express';
-import { Messages } from '@/shared/constants/messages.constant';
+import { Messages } from '@shared/constants/messages.constant';
 
 @Controller('api/v1/auth')
 export class AuthController {
