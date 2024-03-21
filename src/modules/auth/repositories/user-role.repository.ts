@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DataSource, Repository } from 'typeorm';
+import { DataSource, DeleteResult, Repository } from 'typeorm';
 import { UserRole } from '@/modules/auth/entities/user-role.entity';
 
 @Injectable()
@@ -21,5 +21,14 @@ export class UserRoleRepository extends Repository<UserRole> {
       where: { user: { id: userId } },
       relations: { user: true, role: true },
     });
+  }
+
+  async deleteByUserId(userId: number): Promise<boolean> {
+    const deleteResult: DeleteResult = await this.delete({
+      user: { id: userId },
+    });
+    if (deleteResult.affected === 0) return false;
+
+    return true;
   }
 }

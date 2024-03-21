@@ -41,4 +41,8 @@ export class UserService {
 
     return user ? false : true;
   }
+
+  async deleteById(id: number): Promise<boolean> {
+    return this.userRepository.deleteById(id);
+  }
 }

@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   InternalServerErrorException,
   NotFoundException,
@@ -9,6 +10,7 @@ import {
   Post,
   Query,
   Req,
+  UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
@@ -19,32 +21,33 @@ import { Messages } from '@/shared/constants/messages.constant';
 import { RolesGuard } from '@modules/auth/guards/roles.guard';
 import { Roles } from '@modules/auth/decorators/roles.decorator';
 import { UserRoles } from '@modules/auth/enums/role.enum';
+import { Request } from 'express';
+import { UserRoleService } from '@modules/auth/services/user-role.service';
+import { UserRole } from '@modules/auth/entities/user-role.entity';
+import { UserUpdateDTO } from './dto/userUpdate.dto';
 
 @Controller('api/v1/users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly userRoleService: UserRoleService,
+  ) {}
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  async myProfile(@Req() req): Promise<User> {
-    return req.user;
+  async myProfile(@Req() req: Request): Promise<User> {
+    return req.user as User;
   }
 
   @Get(':username/profile')
   async profile(@Param('username') username: string): Promise<User | unknown> {
-    try {
-      const user: User = await this.userService.getByUsername(username);
+    const user: User = await this.userService.getByUsername(username);
 
-      if (user) return user;
+    if (user) return user;
 
-      throw new NotFoundException({
-        message: Messages.USER_NOT_FOUND,
-      });
-    } catch (error) {
-      throw new InternalServerErrorException({
-        message: Messages.INTERNAL_SERVER_ERROR,
-      });
-    }
+    throw new NotFoundException({
+      message: Messages.USER_NOT_FOUND,
+    });
   }
 
   @Get('checkUsernameAvailability')
@@ -96,8 +99,32 @@ export class UserController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRoles.ADMIN)
-  async addUser(@Body() formData: User): Promise<unknown> {
+  async addUser(@Body() formData: UserUpdateDTO): Promise<unknown> {
     // placeholder code to test role guard, will be updated later
     return formData;
+  }
+
+  @Delete(':username')
+  @UseGuards(JwtAuthGuard)
+  async deleteUser(
+    @Req() req: Request,
+    @Param('username') username: string,
+  ): Promise<unknown> {
+    if (!(await this.userService.getByUsername(username)))
+      throw new NotFoundException(Messages.USER_NOT_FOUND);
+
+    const user: User = req.user as User;
+    const userRole: UserRole = await this.userRoleService.getByUserId(user.id);
+    if (user.username !== username && userRole.role.name !== UserRoles.ADMIN)
+      throw new UnauthorizedException();
+    // `User ${username} cannot be deleted by ${user.username} with role ${userRole.role.name}`,
+
+    try {
+      return this.userService.deleteById(user.id);
+    } catch (error) {
+      throw new InternalServerErrorException({
+        message: Messages.INTERNAL_SERVER_ERROR,
+      });
+    }
   }
 }
