@@ -24,6 +24,6 @@ import { RoleRepository } from '@modules/auth/repositories/role.repository';
     GeoRepository,
     CompanyRepository,
   ],
-  exports: [UserService],
+  exports: [UserService, UserRepository],
 })
 export class UserModule {}
