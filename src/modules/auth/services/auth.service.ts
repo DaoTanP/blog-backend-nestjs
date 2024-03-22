@@ -6,10 +6,11 @@ import { JwtService } from '@nestjs/jwt';
 import { UserService } from '@modules/user/user.service';
 import { User } from '@modules/user/entities/user.entity';
 import { UserRoleService } from './user-role.service';
-import { UserRole } from '@/modules/auth/entities/user-role.entity';
 import { SignUpDTO } from '../dto/signUp.dto';
 import { UserRepository } from '@/modules/user/repositories/user.repository';
 import { Messages } from '@/shared/constants/messages.constant';
+import { UserRole } from '@modules/auth/entities/user-role.entity';
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -32,7 +33,7 @@ export class AuthService {
     )
       return null;
 
-    return this.userService.getByUsername(account.username);
+    return this.userService.getById(account.id);
   }
 
   async generateToken(user: any): Promise<{ access_token: string }> {

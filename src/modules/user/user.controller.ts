@@ -17,14 +17,14 @@ import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
 import { UserService } from './user.service';
 import { isAlphanumeric, isEmail } from 'class-validator';
 import { User } from './entities/user.entity';
-import { Messages } from '@/shared/constants/messages.constant';
+import { Messages } from '@shared/constants/messages.constant';
 import { RolesGuard } from '@modules/auth/guards/roles.guard';
 import { Roles } from '@modules/auth/decorators/roles.decorator';
-import { UserRoles } from '@modules/auth/enums/role.enum';
+import { UserRoles } from '@shared/constants/role.enum';
 import { Request } from 'express';
 import { UserRoleService } from '@modules/auth/services/user-role.service';
 import { UserRole } from '@modules/auth/entities/user-role.entity';
-import { UserUpdateDTO } from './dto/userUpdate.dto';
+import { UserDTO } from './dto/user.dto';
 
 @Controller('api/v1/users')
 export class UserController {
@@ -99,9 +99,9 @@ export class UserController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRoles.ADMIN)
-  async addUser(@Body() formData: UserUpdateDTO): Promise<unknown> {
+  async addUser(@Body() formData: UserDTO): Promise<unknown> {
     // placeholder code to test role guard, will be updated later
-    return formData;
+    return this.userService.addUser(formData);
   }
 
   @Delete(':username')
@@ -110,17 +110,19 @@ export class UserController {
     @Req() req: Request,
     @Param('username') username: string,
   ): Promise<unknown> {
-    if (!(await this.userService.getByUsername(username)))
-      throw new NotFoundException(Messages.USER_NOT_FOUND);
+    const userToDelete: User = await this.userService.getByUsername(username);
+    if (!userToDelete) throw new NotFoundException(Messages.USER_NOT_FOUND);
 
-    const user: User = req.user as User;
-    const userRole: UserRole = await this.userRoleService.getByUserId(user.id);
-    if (user.username !== username && userRole.role.name !== UserRoles.ADMIN)
+    const reqUser: User = req.user as User;
+    const userRole: UserRole = await this.userRoleService.getByUserId(
+      reqUser.id,
+    );
+    if (reqUser.username !== username && userRole.role.name !== UserRoles.ADMIN)
       throw new UnauthorizedException();
     // `User ${username} cannot be deleted by ${user.username} with role ${userRole.role.name}`,
 
     try {
-      return this.userService.deleteById(user.id);
+      return this.userService.deleteById(userToDelete.id);
     } catch (error) {
       throw new InternalServerErrorException({
         message: Messages.INTERNAL_SERVER_ERROR,

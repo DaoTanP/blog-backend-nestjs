@@ -14,6 +14,7 @@ import * as bcrypt from 'bcrypt';
 @Entity('users')
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn('increment', { type: 'bigint', unsigned: true })
+  // @PrimaryGeneratedColumn('increment')
   id: number;
 
   @Column('varchar', { name: 'first_name', nullable: false, length: 255 })
@@ -22,13 +23,13 @@ export class User extends BaseEntity {
   @Column('varchar', { name: 'last_name', nullable: false, length: 255 })
   lastName: string;
 
-  @Column('varchar', { nullable: false, length: 255 })
+  @Column('varchar', { nullable: false, length: 255, unique: true })
   username: string;
 
   @Column('varchar', { nullable: false, length: 255, select: false })
   password: string;
 
-  @Column('varchar', { nullable: false, length: 255 })
+  @Column('varchar', { nullable: false, length: 255, unique: true })
   email: string;
 
   @Column('varchar', { length: 255 })
@@ -52,13 +53,15 @@ export class User extends BaseEntity {
   updatedAt: Date;
 
   @ManyToOne(() => Address, (address: Address) => address.users, {
-    cascade: true,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
   })
   @JoinColumn({ name: 'address_id', foreignKeyConstraintName: 'fk_address' })
   address: Address;
 
   @ManyToOne(() => Company, (company: Company) => company.users, {
-    cascade: true,
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
   })
   @JoinColumn({ name: 'company_id', foreignKeyConstraintName: 'fk_company' })
   company: Company;

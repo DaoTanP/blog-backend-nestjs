@@ -57,7 +57,7 @@ export class Address extends BaseEntity {
   })
   updatedBy: Date;
 
-  @OneToOne(() => Geo, { cascade: true })
+  @OneToOne(() => Geo, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
   @JoinColumn({
     name: 'geo_id',
     foreignKeyConstraintName: 'fk_geo',
