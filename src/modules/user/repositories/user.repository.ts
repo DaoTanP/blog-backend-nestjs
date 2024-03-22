@@ -7,6 +7,8 @@ import {
 } from 'typeorm';
 import { User } from '@modules/user/entities/user.entity';
 import { UserRoleService } from '@modules/auth/services/user-role.service';
+import { UserDTO } from '@modules/user/dto/user.dto';
+import { UserRoles } from '@shared/constants/role.enum';
 
 @Injectable()
 export class UserRepository extends Repository<User> {
@@ -61,6 +63,15 @@ export class UserRepository extends Repository<User> {
       where: { email },
       relations: this.findOptionRelations,
     });
+  }
+
+  async addUser(userDto: UserDTO): Promise<User> {
+    const user: User = this.create(userDto);
+    const newUser: User = await this.save(user);
+
+    if (newUser) await this.userRoleService.add(newUser, UserRoles.USER);
+
+    return newUser;
   }
 
   async deleteById(id: number): Promise<boolean> {
