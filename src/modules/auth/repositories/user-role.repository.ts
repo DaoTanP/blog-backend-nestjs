@@ -1,10 +1,11 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { DataSource, DeleteResult, Repository } from 'typeorm';
 import { UserRole } from '@modules/auth/entities/user-role.entity';
 import { User } from '@modules/user/entities/user.entity';
 import { Role } from '@modules/auth/entities/role.entity';
 import { UserRoles } from '@/shared/constants/role.enum';
 import { RoleRepository } from './role.repository';
+
 
 @Injectable()
 export class UserRoleRepository extends Repository<UserRole> {
@@ -45,4 +46,5 @@ export class UserRoleRepository extends Repository<UserRole> {
 
     return true;
   }
+
 }

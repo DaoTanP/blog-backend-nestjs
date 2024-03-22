@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { UserRepository } from './repositories/user.repository';
 import { User } from './entities/user.entity';
 import { UserDTO } from './dto/user.dto';
@@ -7,6 +7,8 @@ import { CompanyRepository } from './repositories/company.repository';
 import { GeoRepository } from './repositories/geo.repository';
 import { Address } from './entities/address.entity';
 import { Company } from './entities/company.entity';
+import { Messages } from '@/shared/constants/messages.constant';
+import { UserRoleService } from '../auth/services/user-role.service';
 
 @Injectable()
 export class UserService {
@@ -15,6 +17,7 @@ export class UserService {
     private readonly addressRepository: AddressRepository,
     private readonly geoRepository: GeoRepository,
     private readonly companyRepository: CompanyRepository,
+    private readonly userRoleService: UserRoleService,
   ) {}
 
   async getAll(): Promise<User[]> {
@@ -73,4 +76,44 @@ export class UserService {
 
     return this.userRepository.addUser(userDto);
   }
+
+  async giveAdmin(username: string): Promise<Object> {
+    try {
+      const user = await this.getAccountByUsername(username);
+      if (!user) { throw new NotFoundException(Messages.USER_NOT_FOUND); }
+
+      await this.userRoleService.giveAdminRole(user.id);
+
+      const userData = await this.userRepository.save(user);
+      return {
+        statusCode: HttpStatus.OK,
+        message: username + Messages.GIVE_ADMIN,
+        data: userData,
+      };
+    }
+    catch (error) {
+      throw error instanceof HttpException ? error : new InternalServerErrorException(Messages.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async takeAdmin(username: string): Promise<Object> {
+    try {
+      const user = await this.getAccountByUsername(username);
+      if (!user) { throw new NotFoundException(Messages.USER_NOT_FOUND); }
+
+      await this.userRoleService.takeAdminRole(user.id);
+
+      const userData = await this.userRepository.save(user);
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: username + Messages.TASK_ADMIN,
+        data: userData,
+      };
+    }
+    catch (error) {
+      throw error instanceof HttpException ? error : new InternalServerErrorException(Messages.INTERNAL_SERVER_ERROR);
+    }
+  }
+
 }
