@@ -8,6 +8,7 @@ import {
   NotFoundException,
   Param,
   Post,
+  Put,
   Query,
   Req,
   UnauthorizedException,
@@ -22,16 +23,11 @@ import { RolesGuard } from '@modules/auth/guards/roles.guard';
 import { Roles } from '@modules/auth/decorators/roles.decorator';
 import { UserRoles } from '@shared/constants/role.enum';
 import { Request } from 'express';
-import { UserRoleService } from '@modules/auth/services/user-role.service';
-import { UserRole } from '@modules/auth/entities/user-role.entity';
 import { UserDTO } from './dto/user.dto';
 
 @Controller('api/v1/users')
 export class UserController {
-  constructor(
-    private readonly userService: UserService,
-    private readonly userRoleService: UserRoleService,
-  ) {}
+  constructor(private readonly userService: UserService) {}
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
@@ -100,8 +96,40 @@ export class UserController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(UserRoles.ADMIN)
   async addUser(@Body() formData: UserDTO): Promise<unknown> {
-    // placeholder code to test role guard, will be updated later
+    if (await this.userService.getAccountByUsername(formData.username))
+      throw new BadRequestException(Messages.USERNAME_DUPLICATED);
+    if (await this.userService.getAccountByEmail(formData.email))
+      throw new BadRequestException(Messages.EMAIL_DUPLICATED);
+
     return this.userService.addUser(formData);
+  }
+
+  @Put(':username')
+  @UseGuards(JwtAuthGuard)
+  async updateUser(
+    @Req() req: Request,
+    @Param('username') username: string,
+    @Body() formData: UserDTO,
+  ): Promise<unknown> {
+    const userToUpdate: User = await this.userService.getByUsername(username);
+    if (!userToUpdate) throw new NotFoundException(Messages.USER_NOT_FOUND);
+
+    if (!(await this.userService.hasPermission(username, req.user as User)))
+      throw new UnauthorizedException();
+    // `User ${username} cannot be updated by ${user.username} with role ${userRole.role.name}`,
+
+    if (await this.userService.getAccountByUsername(formData.username))
+      throw new BadRequestException(Messages.USERNAME_DUPLICATED);
+    if (await this.userService.getAccountByEmail(formData.email))
+      throw new BadRequestException(Messages.EMAIL_DUPLICATED);
+
+    try {
+      return this.userService.updateById(userToUpdate.id, formData);
+    } catch (error) {
+      throw new InternalServerErrorException({
+        message: Messages.INTERNAL_SERVER_ERROR,
+      });
+    }
   }
 
   @Delete(':username')
@@ -113,11 +141,7 @@ export class UserController {
     const userToDelete: User = await this.userService.getByUsername(username);
     if (!userToDelete) throw new NotFoundException(Messages.USER_NOT_FOUND);
 
-    const reqUser: User = req.user as User;
-    const userRole: UserRole = await this.userRoleService.getByUserId(
-      reqUser.id,
-    );
-    if (reqUser.username !== username && userRole.role.name !== UserRoles.ADMIN)
+    if (!(await this.userService.hasPermission(username, req.user as User)))
       throw new UnauthorizedException();
     // `User ${username} cannot be deleted by ${user.username} with role ${userRole.role.name}`,
 

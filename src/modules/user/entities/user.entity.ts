@@ -6,6 +6,7 @@ import {
   ManyToOne,
   JoinColumn,
   BeforeInsert,
+  BeforeUpdate,
 } from 'typeorm';
 import { Address } from './address.entity';
 import { Company } from './company.entity';
@@ -67,6 +68,7 @@ export class User extends BaseEntity {
   company: Company;
 
   @BeforeInsert()
+  @BeforeUpdate()
   async hashPassword(password: string): Promise<void> {
     const salt = await bcrypt.genSalt();
     this.password = await bcrypt.hash(password || this.password, salt);
