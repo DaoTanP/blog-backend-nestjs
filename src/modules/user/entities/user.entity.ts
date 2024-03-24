@@ -6,10 +6,12 @@ import {
   ManyToOne,
   JoinColumn,
   BeforeInsert,
+  OneToMany,
 } from 'typeorm';
 import { Address } from './address.entity';
 import { Company } from './company.entity';
 import * as bcrypt from 'bcrypt';
+import { Post } from '@/modules/post/entities/post.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -65,6 +67,9 @@ export class User extends BaseEntity {
   })
   @JoinColumn({ name: 'company_id', foreignKeyConstraintName: 'fk_company' })
   company: Company;
+
+  @OneToMany(() => Post, (post: Post) => post.user)
+  posts: Post[];
 
   @BeforeInsert()
   async hashPassword(password: string): Promise<void> {
