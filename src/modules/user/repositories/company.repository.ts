@@ -25,6 +25,13 @@ export class CompanyRepository extends Repository<Company> {
     });
   }
 
+  async getOrAdd(companyDto: CompanyDTO): Promise<Company> {
+    let company: Company = await this.get(companyDto);
+    if (!company) company = await this.add(companyDto);
+
+    return company;
+  }
+
   async add(companyDto: CompanyDTO): Promise<Company> {
     const company: Company = this.create(companyDto);
     return this.save(company);

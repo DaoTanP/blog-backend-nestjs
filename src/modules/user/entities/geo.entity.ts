@@ -31,7 +31,7 @@ export class Geo extends BaseEntity {
     default: null,
     select: false,
   })
-  createdBy: Date;
+  createdBy: number;
 
   @Column('bigint', {
     name: 'updated_by',
@@ -39,5 +39,5 @@ export class Geo extends BaseEntity {
     default: null,
     select: false,
   })
-  updatedBy: Date;
+  updatedBy: number;
 }
