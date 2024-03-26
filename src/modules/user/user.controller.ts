@@ -140,24 +140,29 @@ export class UserController {
     @Req() req: Request,
     @Body() userProfileDto: UserProfileDto,
   ): Promise<{ status: number; message: string; data: unknown }> {
-    const reqUser: User = req.user as User;
-    if (!reqUser) throw new NotFoundException(Messages.USER_NOT_FOUND);
+    try {
+      const reqUser: User = req.user as User;
+      if (!reqUser) throw new NotFoundException(Messages.USER_NOT_FOUND);
 
-    const loggedInUserId = reqUser.id;
-    const userId = parseInt(req.params.userId);
-    const userRole: UserRole =
-      await this.userRoleService.getByUserId(loggedInUserId);
-    if (userRole.role.name !== UserRoles.ADMIN || userId === loggedInUserId)
-      throw new UnauthorizedException();
-    const dataReponse = await this.userService.setOrUpdateInfo(
-      reqUser.id,
-      userProfileDto,
-    );
-
-    return {
-      status: HttpStatus.OK,
-      message: Messages.UPDATE_USER,
-      data: dataReponse,
-    };
+      const loggedInUserId = reqUser.id;
+      const userId = parseInt(req.params.userId);
+      const userRole: UserRole =
+        await this.userRoleService.getByUserId(loggedInUserId);
+      if (userRole.role.name !== UserRoles.ADMIN || userId === loggedInUserId)
+        throw new UnauthorizedException();
+      const dataReponse = await this.userService.setOrUpdateInfo(
+        reqUser.id,
+        userProfileDto,
+      );
+      return {
+        status: HttpStatus.OK,
+        message: Messages.UPDATE_USER,
+        data: dataReponse,
+      };
+    } catch (error) {
+      throw new InternalServerErrorException({
+        message: Messages.INTERNAL_SERVER_ERROR,
+      });
+    }
   }
 }
