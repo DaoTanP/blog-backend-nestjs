@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpStatus,
   InternalServerErrorException,
   NotFoundException,
   Param,
@@ -152,5 +153,23 @@ export class UserController {
         message: Messages.INTERNAL_SERVER_ERROR,
       });
     }
+  }
+
+  @Post(':username/giveAdmin')
+  @Roles(UserRoles.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  giveAdmin(
+    @Param('username') username: string,
+  ): Promise<{ statusCode: HttpStatus; message: string; data: User }> {
+    return this.userService.giveAdmin(username);
+  }
+
+  @Post(':username/takeAdmin')
+  @Roles(UserRoles.ADMIN)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  takeAdmin(
+    @Param('username') username: string,
+  ): Promise<{ statusCode: HttpStatus; message: string; data: User }> {
+    return this.userService.takeAdmin(username);
   }
 }

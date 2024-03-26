@@ -1,7 +1,19 @@
-import { Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { UserRepository } from './repositories/user.repository';
 import { User } from './entities/user.entity';
 import { UserDTO } from './dto/user.dto';
+import { AddressRepository } from './repositories/address.repository';
+import { CompanyRepository } from './repositories/company.repository';
+import { GeoRepository } from './repositories/geo.repository';
+import { Address } from './entities/address.entity';
+import { Company } from './entities/company.entity';
+import { Messages } from '@/shared/constants/messages.constant';
 import { UserRoles } from '@/shared/constants/role.enum';
 import { UserRole } from '@modules/auth/entities/user-role.entity';
 import { UserRoleService } from '@modules/auth/services/user-role.service';
@@ -10,6 +22,9 @@ import { UserRoleService } from '@modules/auth/services/user-role.service';
 export class UserService {
   constructor(
     private readonly userRepository: UserRepository,
+    private readonly addressRepository: AddressRepository,
+    private readonly geoRepository: GeoRepository,
+    private readonly companyRepository: CompanyRepository,
     private readonly userRoleService: UserRoleService,
   ) {}
 
@@ -67,5 +82,54 @@ export class UserService {
 
   async addUser(userDto: UserDTO): Promise<unknown> {
     return this.userRepository.addUser(userDto);
+  }
+
+  async giveAdmin(
+    username: string,
+  ): Promise<{ statusCode: HttpStatus; message: string; data: User }> {
+    try {
+      const user = await this.getAccountByUsername(username);
+      if (!user) {
+        throw new NotFoundException(Messages.USER_NOT_FOUND);
+      }
+
+      await this.userRoleService.giveAdminRole(user.id);
+
+      const userData = await this.userRepository.save(user);
+      return {
+        statusCode: HttpStatus.OK,
+        message: Messages.GIVE_ADMIN,
+        data: userData,
+      };
+    } catch (error) {
+      throw error instanceof HttpException
+        ? error
+        : new InternalServerErrorException(Messages.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async takeAdmin(
+    username: string,
+  ): Promise<{ statusCode: HttpStatus; message: string; data: User }> {
+    try {
+      const user = await this.getAccountByUsername(username);
+      if (!user) {
+        throw new NotFoundException(Messages.USER_NOT_FOUND);
+      }
+
+      await this.userRoleService.takeAdminRole(user.id);
+
+      const userData = await this.userRepository.save(user);
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: Messages.TASK_ADMIN,
+        data: userData,
+      };
+    } catch (error) {
+      throw error instanceof HttpException
+        ? error
+        : new InternalServerErrorException(Messages.INTERNAL_SERVER_ERROR);
+    }
   }
 }

@@ -8,4 +8,11 @@ export const Messages = {
   POST_NOT_FOUND: 'Post not found',
   EMAIL_DUPLICATED: 'Email already exists',
   INTERNAL_SERVER_ERROR: 'An error occurred while processing your request',
+  USERNAME_EXIST: 'Username is already taken',
+  EMAIL_EXIST: 'Email is already taken',
+  GIVE_ADMIN: 'Admin role has been assigned.',
+  TASK_ADMIN: 'Admin role has been revoked.',
+  USERROLE_NOT_FOUND: 'User role not found.',
+  USER_IS_ADMIN: 'User is admin.',
+  USER_NOT_ADMIN: 'User not admin.',
 };
