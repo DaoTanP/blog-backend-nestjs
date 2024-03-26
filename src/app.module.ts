@@ -4,6 +4,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { typeOrmConfigAsync } from './shared/config/database.config';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
+import { TodoModule } from './modules/todo/todo.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { UserModule } from './modules/user/user.module';
     TypeOrmModule.forRootAsync(typeOrmConfigAsync),
     AuthModule,
     UserModule,
+    TodoModule,
   ],
   controllers: [],
   providers: [],
