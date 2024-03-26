@@ -63,7 +63,12 @@ export class PostController {
     const postToUpdate: PostEntity = await this.postService.getById(id);
     if (!postToUpdate) throw new NotFoundException(Messages.POST_NOT_FOUND);
 
-    if (!(await this.userService.hasPermission(id, req.user as User)))
+    if (
+      !(await this.userService.hasPermission(
+        postToUpdate.user.username,
+        req.user as User,
+      ))
+    )
       throw new UnauthorizedException();
 
     try {
@@ -84,7 +89,12 @@ export class PostController {
     const postToDelete: PostEntity = await this.postService.getById(id);
     if (!postToDelete) throw new NotFoundException(Messages.POST_NOT_FOUND);
 
-    if (!(await this.userService.hasPermission(id, req.user as User)))
+    if (
+      !(await this.userService.hasPermission(
+        postToDelete.user.username,
+        req.user as User,
+      ))
+    )
       throw new UnauthorizedException();
 
     try {
