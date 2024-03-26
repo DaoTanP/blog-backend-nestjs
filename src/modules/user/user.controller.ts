@@ -4,6 +4,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpStatus,
   InternalServerErrorException,
   NotFoundException,
   Param,
@@ -132,18 +133,19 @@ export class UserController {
 
   @Post(':username/giveAdmin')
   @Roles(UserRoles.ADMIN)
-  @UseGuards(JwtAuthGuard,RolesGuard)
-  giveAdmin(@Param('username') username: string): Promise<Object>{
-
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  giveAdmin(
+    @Param('username') username: string,
+  ): Promise<{ statusCode: HttpStatus; message: string; data: User }> {
     return this.userService.giveAdmin(username);
   }
 
   @Post(':username/takeAdmin')
   @Roles(UserRoles.ADMIN)
-  @UseGuards(JwtAuthGuard,RolesGuard)
-  takeAdmin(@Param('username') username: string): Promise<Object>{
-
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  takeAdmin(
+    @Param('username') username: string,
+  ): Promise<{ statusCode: HttpStatus; message: string; data: User }> {
     return this.userService.takeAdmin(username);
   }
-
 }

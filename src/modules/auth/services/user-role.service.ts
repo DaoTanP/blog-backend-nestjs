@@ -1,9 +1,14 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  InternalServerErrorException,
+} from '@nestjs/common';
 import { UserRoleRepository } from '@modules/auth/repositories/user-role.repository';
 import { UserRole } from '@modules/auth/entities/user-role.entity';
 import { UserRoles } from '@shared/constants/role.enum';
 import { User } from '@modules/user/entities/user.entity';
 import { Messages } from '@/shared/constants/messages.constant';
+import { compare } from 'bcrypt';
 
 @Injectable()
 export class UserRoleService {
@@ -30,20 +35,40 @@ export class UserRoleService {
   }
 
   async giveAdminRole(userId: number) {
-    const setRole = await this.getByUserId(userId);
+    try {
+      const user = await this.getByUserId(userId);
+      const role = await user.role;
+      if (!role) {
+        throw new InternalServerErrorException(Messages.USERROLE_NOT_FOUND);
+      }
+      const roleName = await role.name;
+      if (compare(roleName, UserRoles.ADMIN)) {
+        throw new BadRequestException(Messages.USER_IS_ADMIN);
+      }
+      role.name = UserRoles.ADMIN;
 
-    const role = (await setRole).role.name = UserRoles.ADMIN;
-    if (!role) { throw new InternalServerErrorException(Messages.USERROLE_NOT_FOUND); }
-
-    this.userRoleRepository.save(setRole);
+      this.userRoleRepository.save(user);
+    } catch (error) {
+      throw new InternalServerErrorException(Messages.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async takeAdminRole(userId: number) {
-    const setRole = await this.getByUserId(userId);
+    try {
+      const user = await this.getByUserId(userId);
+      const role = await user.role;
+      if (!role) {
+        throw new InternalServerErrorException(Messages.USERROLE_NOT_FOUND);
+      }
+      const roleName = await role.name;
+      if (!compare(roleName, UserRoles.ADMIN)) {
+        throw new BadRequestException(Messages.USER_NOT_ADMIN);
+      }
+      role.name = UserRoles.USER;
 
-    const role = (await setRole).role.name = UserRoles.USER;
-    if (!role) { throw new InternalServerErrorException(Messages.USERROLE_NOT_FOUND); }
-
-    this.userRoleRepository.save(setRole);
+      this.userRoleRepository.save(user);
+    } catch (error) {
+      throw new InternalServerErrorException(Messages.INTERNAL_SERVER_ERROR);
+    }
   }
 }

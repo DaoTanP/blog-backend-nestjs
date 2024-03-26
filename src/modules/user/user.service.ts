@@ -1,4 +1,10 @@
-import { HttpException, HttpStatus, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { UserRepository } from './repositories/user.repository';
 import { User } from './entities/user.entity';
 import { UserDTO } from './dto/user.dto';
@@ -77,29 +83,38 @@ export class UserService {
     return this.userRepository.addUser(userDto);
   }
 
-  async giveAdmin(username: string): Promise<Object> {
+  async giveAdmin(
+    username: string,
+  ): Promise<{ statusCode: HttpStatus; message: string; data: User }> {
     try {
       const user = await this.getAccountByUsername(username);
-      if (!user) { throw new NotFoundException(Messages.USER_NOT_FOUND); }
+      if (!user) {
+        throw new NotFoundException(Messages.USER_NOT_FOUND);
+      }
 
       await this.userRoleService.giveAdminRole(user.id);
 
       const userData = await this.userRepository.save(user);
       return {
         statusCode: HttpStatus.OK,
-        message: username + Messages.GIVE_ADMIN,
+        message: Messages.GIVE_ADMIN,
         data: userData,
       };
-    }
-    catch (error) {
-      throw error instanceof HttpException ? error : new InternalServerErrorException(Messages.INTERNAL_SERVER_ERROR);
+    } catch (error) {
+      throw error instanceof HttpException
+        ? error
+        : new InternalServerErrorException(Messages.INTERNAL_SERVER_ERROR);
     }
   }
 
-  async takeAdmin(username: string): Promise<Object> {
+  async takeAdmin(
+    username: string,
+  ): Promise<{ statusCode: HttpStatus; message: string; data: User }> {
     try {
       const user = await this.getAccountByUsername(username);
-      if (!user) { throw new NotFoundException(Messages.USER_NOT_FOUND); }
+      if (!user) {
+        throw new NotFoundException(Messages.USER_NOT_FOUND);
+      }
 
       await this.userRoleService.takeAdminRole(user.id);
 
@@ -107,13 +122,13 @@ export class UserService {
 
       return {
         statusCode: HttpStatus.OK,
-        message: username + Messages.TASK_ADMIN,
+        message: Messages.TASK_ADMIN,
         data: userData,
       };
-    }
-    catch (error) {
-      throw error instanceof HttpException ? error : new InternalServerErrorException(Messages.INTERNAL_SERVER_ERROR);
+    } catch (error) {
+      throw error instanceof HttpException
+        ? error
+        : new InternalServerErrorException(Messages.INTERNAL_SERVER_ERROR);
     }
   }
-
 }
