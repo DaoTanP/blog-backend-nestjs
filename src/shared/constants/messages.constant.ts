@@ -5,4 +5,5 @@ export const Messages = {
   USERNAME_INVALID: 'Valid username must only contain alphanumeric characters',
   EMAIL_INVALID: 'Invalid email address',
   INTERNAL_SERVER_ERROR: 'An error occurred while processing your request',
+  UPDATE_USER: 'Update user profile successfully!',
 };
