@@ -5,6 +5,7 @@ import { typeOrmConfigAsync } from './shared/config/database.config';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
 import { PostModule } from './modules/post/post.module';
+import { TodoModule } from './modules/todo/todo.module';
 
 @Module({
   imports: [
@@ -13,6 +14,7 @@ import { PostModule } from './modules/post/post.module';
     AuthModule,
     UserModule,
     PostModule,
+    TodoModule,
   ],
   controllers: [],
   providers: [],
