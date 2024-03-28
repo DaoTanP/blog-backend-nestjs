@@ -13,6 +13,7 @@ import { Address } from './address.entity';
 import { Company } from './company.entity';
 import * as bcrypt from 'bcrypt';
 import { Post } from '@/modules/post/entities/post.entity';
+import { Album } from '@/modules/album/entities/album.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
@@ -71,6 +72,9 @@ export class User extends BaseEntity {
 
   @OneToMany(() => Post, (post: Post) => post.user)
   posts: Post[];
+
+  @OneToMany(() => Album, (album: Album) => album.user)
+  albums: Album[];
 
   @BeforeInsert()
   @BeforeUpdate()

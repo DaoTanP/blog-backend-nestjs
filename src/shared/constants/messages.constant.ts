@@ -17,4 +17,5 @@ export const Messages = {
   USERROLE_NOT_FOUND: 'User role not found.',
   USER_IS_ADMIN: 'User is admin.',
   USER_NOT_ADMIN: 'User not admin.',
+  ALBUM_NOT_FOUND: 'Album not found',
 };

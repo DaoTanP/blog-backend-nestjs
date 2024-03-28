@@ -22,6 +22,6 @@ import { RoleRepository } from './repositories/role.repository';
     UserRoleRepository,
     RoleRepository,
   ],
-  exports:[UserRoleService],
+  exports: [UserRoleService],
 })
 export class AuthModule {}
