@@ -52,11 +52,11 @@ export class AuthService {
 
       const usernameExists = await this.userRepository.getAccountByUsername(signUpDTO.username);
       if (usernameExists) {
-        throw new BadRequestException('Username is already taken');
+        throw new BadRequestException(Messages.USERNAME_EXIST);
       }
       const emailExists = await this.userRepository.getAccountByEmail(signUpDTO.email);
       if (emailExists) {
-        throw new BadRequestException('Email is already taken');
+        throw new BadRequestException(Messages.EMAIL_EXIST);
       }
       const hashedPassword = await bcrypt.hash(signUpDTO.password, 10);
 

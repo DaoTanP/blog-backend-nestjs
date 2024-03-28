@@ -49,13 +49,21 @@ export class AddressRepository extends Repository<Address> {
     });
   }
 
+  async getOrAdd(addressDto: AddressDTO): Promise<Address> {
+    let address: Address = await this.get(addressDto);
+    if (!address) address = await this.getWithoutGeo(addressDto);
+
+    if (!address) address = await this.add(addressDto);
+
+    return address;
+  }
+
   async add(addressDto: AddressDTO): Promise<Address> {
     let geo: Geo = await this.geoRepository.get(addressDto.geo);
     if (!geo) geo = await this.geoRepository.add(addressDto.geo);
 
     const address: Address = this.create(addressDto);
     address.geo = geo;
-    console.log(address);
 
     return this.save(address);
   }

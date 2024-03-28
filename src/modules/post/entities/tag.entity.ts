@@ -1,25 +1,12 @@
-import {
-  Entity,
-  PrimaryGeneratedColumn,
-  Column,
-  BaseEntity,
-  OneToMany,
-} from 'typeorm';
-import { User } from './user.entity';
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from 'typeorm';
 
-@Entity('company')
-export class Company extends BaseEntity {
+@Entity('tags')
+export class Tag extends BaseEntity {
   @PrimaryGeneratedColumn('increment', { type: 'bigint', unsigned: true })
   id: number;
 
-  @Column('varchar', { length: 255 })
+  @Column('varchar', { nullable: false, length: 255 })
   name: string;
-
-  @Column('varchar', { name: 'catch_phrase', length: 255 })
-  catchPhrase: string;
-
-  @Column('varchar', { length: 255 })
-  bs: string;
 
   @Column('timestamp', {
     name: 'created_at',
@@ -50,7 +37,4 @@ export class Company extends BaseEntity {
     select: false,
   })
   updatedBy: number;
-
-  @OneToMany(() => User, (user: User) => user.company)
-  users: User[];
 }

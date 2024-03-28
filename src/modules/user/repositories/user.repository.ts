@@ -9,6 +9,10 @@ import { User } from '@modules/user/entities/user.entity';
 import { UserRoleService } from '@modules/auth/services/user-role.service';
 import { UserDTO } from '@modules/user/dto/user.dto';
 import { UserRoles } from '@shared/constants/role.enum';
+import { Address } from '@modules/user/entities/address.entity';
+import { Company } from '@modules/user/entities/company.entity';
+import { AddressRepository } from './address.repository';
+import { CompanyRepository } from './company.repository';
 
 @Injectable()
 export class UserRepository extends Repository<User> {
@@ -22,6 +26,8 @@ export class UserRepository extends Repository<User> {
   constructor(
     private dataSource: DataSource,
     private readonly userRoleService: UserRoleService,
+    private readonly addressRepository: AddressRepository,
+    private readonly companyRepository: CompanyRepository,
   ) {
     super(User, dataSource.createEntityManager());
   }
@@ -66,12 +72,39 @@ export class UserRepository extends Repository<User> {
   }
 
   async addUser(userDto: UserDTO): Promise<User> {
+    const address: Address = await this.addressRepository.getOrAdd(
+      userDto.address,
+    );
+    const company: Company = await this.companyRepository.getOrAdd(
+      userDto.company,
+    );
+
+    userDto.address = address;
+    userDto.company = company;
     const user: User = this.create(userDto);
     const newUser: User = await this.save(user);
 
     if (newUser) await this.userRoleService.add(newUser, UserRoles.USER);
 
     return newUser;
+  }
+
+  async updateById(id: number, userDto: UserDTO): Promise<boolean> {
+    const address: Address = await this.addressRepository.getOrAdd(
+      userDto.address,
+    );
+    const company: Company = await this.companyRepository.getOrAdd(
+      userDto.company,
+    );
+
+    const user: User = await this.getById(id);
+    const userToUpdate: User = Object.assign(user, userDto);
+    userToUpdate.address = address;
+    userToUpdate.company = company;
+    const updatedUser: User = await this.save(userToUpdate);
+    if (!updatedUser) return false;
+
+    return true;
   }
 
   async deleteById(id: number): Promise<boolean> {

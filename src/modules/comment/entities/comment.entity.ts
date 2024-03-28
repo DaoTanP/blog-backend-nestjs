@@ -3,29 +3,25 @@ import {
   PrimaryGeneratedColumn,
   Column,
   BaseEntity,
-  OneToMany,
   JoinColumn,
-  OneToOne,
+  ManyToOne,
 } from 'typeorm';
-import { User } from './user.entity';
-import { Geo } from './geo.entity';
+import { Post } from '@modules/post/entities/post.entity';
+import { User } from '@modules/user/entities/user.entity';
 
-@Entity('address')
-export class Address extends BaseEntity {
+@Entity('comments')
+export class Comment extends BaseEntity {
   @PrimaryGeneratedColumn('increment', { type: 'bigint', unsigned: true })
   id: number;
 
-  @Column('varchar', { length: 255 })
-  street: string;
+  @Column('varchar', { length: 255, nullable: false })
+  name: string;
 
-  @Column('varchar', { length: 255 })
-  suite: string;
+  @Column('varchar', { length: 255, nullable: false })
+  email: string;
 
-  @Column('varchar', { length: 255 })
-  city: string;
-
-  @Column('varchar', { length: 255 })
-  zipcode: string;
+  @Column('text', { nullable: false })
+  body: string;
 
   @Column('timestamp', {
     name: 'created_at',
@@ -57,13 +53,17 @@ export class Address extends BaseEntity {
   })
   updatedBy: number;
 
-  @OneToOne(() => Geo, { onDelete: 'CASCADE', onUpdate: 'CASCADE' })
+  @ManyToOne(() => User)
   @JoinColumn({
-    name: 'geo_id',
-    foreignKeyConstraintName: 'fk_geo',
+    name: 'user_id',
+    foreignKeyConstraintName: 'fk_comment_user',
   })
-  geo: Geo;
+  user: User;
 
-  @OneToMany(() => User, (user: User) => user.address)
-  users: User[];
+  @ManyToOne(() => Post)
+  @JoinColumn({
+    name: 'post_id',
+    foreignKeyConstraintName: 'fk_comment_post',
+  })
+  post: Post;
 }

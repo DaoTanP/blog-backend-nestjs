@@ -1,4 +1,10 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { UserRepository } from './repositories/user.repository';
 import { User } from './entities/user.entity';
 import { UserDTO } from './dto/user.dto';
@@ -10,9 +16,12 @@ import { Company } from './entities/company.entity';
 import { Geo } from './entities/geo.entity';
 import { GeoDTO } from './dto/geo.dto';
 import { UserProfileDto } from './dto/userProfile.dto';
-import { Messages } from '@/shared/constants/messages.constant';
 import { CompanyDTO } from './dto/company.dto';
 import { AddressDTO } from './dto/address.dto';
+import { Messages } from '@/shared/constants/messages.constant';
+import { UserRoles } from '@shared/constants/role.enum';
+import { UserRole } from '@modules/auth/entities/user-role.entity';
+import { UserRoleService } from '@modules/auth/services/user-role.service';
 
 @Injectable()
 export class UserService {
@@ -21,6 +30,7 @@ export class UserService {
     private readonly addressRepository: AddressRepository,
     private readonly geoRepository: GeoRepository,
     private readonly companyRepository: CompanyRepository,
+    private readonly userRoleService: UserRoleService,
   ) {}
 
   async getAll(): Promise<User[]> {
@@ -59,25 +69,73 @@ export class UserService {
     return user ? false : true;
   }
 
+  async hasPermission(username: string, user: User): Promise<boolean> {
+    const userRole: UserRole = await this.userRoleService.getByUserId(user.id);
+    if (user.username !== username && userRole.role.name !== UserRoles.ADMIN)
+      return false;
+
+    return true;
+  }
+
   async deleteById(id: number): Promise<boolean> {
     return this.userRepository.deleteById(id);
   }
 
+  async updateById(id: number, userDto: UserDTO): Promise<boolean> {
+    return this.userRepository.updateById(id, userDto);
+  }
+
   async addUser(userDto: UserDTO): Promise<unknown> {
-    let address: Address = await this.addressRepository.get(userDto.address);
-    let company: Company = await this.companyRepository.get(userDto.company);
-
-    if (!address)
-      address = await this.addressRepository.getWithoutGeo(userDto.address);
-
-    if (!address) address = await this.addressRepository.add(userDto.address);
-
-    if (!company) company = await this.companyRepository.add(userDto.company);
-
-    userDto.address = address;
-    userDto.company = company;
-
     return this.userRepository.addUser(userDto);
+  }
+
+  async giveAdmin(
+    username: string,
+  ): Promise<{ statusCode: HttpStatus; message: string; data: User }> {
+    try {
+      const user = await this.getAccountByUsername(username);
+      if (!user) {
+        throw new NotFoundException(Messages.USER_NOT_FOUND);
+      }
+
+      await this.userRoleService.giveAdminRole(user.id);
+
+      const userData = await this.userRepository.save(user);
+      return {
+        statusCode: HttpStatus.OK,
+        message: Messages.GIVE_ADMIN,
+        data: userData,
+      };
+    } catch (error) {
+      throw error instanceof HttpException
+        ? error
+        : new InternalServerErrorException(Messages.INTERNAL_SERVER_ERROR);
+    }
+  }
+
+  async takeAdmin(
+    username: string,
+  ): Promise<{ statusCode: HttpStatus; message: string; data: User }> {
+    try {
+      const user = await this.getAccountByUsername(username);
+      if (!user) {
+        throw new NotFoundException(Messages.USER_NOT_FOUND);
+      }
+
+      await this.userRoleService.takeAdminRole(user.id);
+
+      const userData = await this.userRepository.save(user);
+
+      return {
+        statusCode: HttpStatus.OK,
+        message: Messages.TASK_ADMIN,
+        data: userData,
+      };
+    } catch (error) {
+      throw error instanceof HttpException
+        ? error
+        : new InternalServerErrorException(Messages.INTERNAL_SERVER_ERROR);
+    }
   }
 
   async setOrUpdateInfo(
