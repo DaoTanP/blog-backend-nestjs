@@ -13,8 +13,13 @@ import { CompanyRepository } from './repositories/company.repository';
 import { GeoRepository } from './repositories/geo.repository';
 import { Address } from './entities/address.entity';
 import { Company } from './entities/company.entity';
+import { Geo } from './entities/geo.entity';
+import { GeoDTO } from './dto/geo.dto';
+import { UserProfileDto } from './dto/userProfile.dto';
+import { CompanyDTO } from './dto/company.dto';
+import { AddressDTO } from './dto/address.dto';
 import { Messages } from '@/shared/constants/messages.constant';
-import { UserRoles } from '@/shared/constants/role.enum';
+import { UserRoles } from '@shared/constants/role.enum';
 import { UserRole } from '@modules/auth/entities/user-role.entity';
 import { UserRoleService } from '@modules/auth/services/user-role.service';
 
@@ -131,5 +136,41 @@ export class UserService {
         ? error
         : new InternalServerErrorException(Messages.INTERNAL_SERVER_ERROR);
     }
+  }
+
+  async setOrUpdateInfo(
+    userId: number,
+    userProfileDto: UserProfileDto,
+  ): Promise<unknown> {
+    const user = await this.userRepository.getById(userId);
+    if (!user) throw new NotFoundException(Messages.USER_NOT_FOUND);
+
+    const geoDto: GeoDTO = { lat: userProfileDto.lat, lng: userProfileDto.lng };
+    const companyDto: CompanyDTO = {
+      name: userProfileDto.companyName,
+      catchPhrase: userProfileDto.catchPhrase,
+      bs: userProfileDto.bs,
+    };
+    const addressDto: AddressDTO = {
+      street: userProfileDto.street,
+      suite: userProfileDto.suite,
+      city: userProfileDto.city,
+      zipcode: userProfileDto.zipcode,
+    };
+    let geo: Geo = await this.geoRepository.get(geoDto);
+    let company: Company = await this.companyRepository.get(companyDto);
+    let address: Address = await this.addressRepository.get(addressDto);
+    if (!geo) geo = await this.geoRepository.add(geo);
+    if (!company) company = await this.companyRepository.add(company);
+    if (!address) address = await this.addressRepository.add(address);
+
+    user.address = address;
+    user.company = company;
+    user.address.geo = geo;
+    user.website = userProfileDto.website;
+    user.phone = userProfileDto.phone;
+
+    const updatedUser = this.userRepository.save(user);
+    return updatedUser;
   }
 }

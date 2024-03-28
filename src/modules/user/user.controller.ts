@@ -25,6 +25,7 @@ import { Roles } from '@modules/auth/decorators/roles.decorator';
 import { UserRoles } from '@shared/constants/role.enum';
 import { Request } from 'express';
 import { UserDTO } from './dto/user.dto';
+import { UserProfileDto } from './dto/userProfile.dto';
 
 @Controller('api/v1/users')
 export class UserController {
@@ -154,6 +155,38 @@ export class UserController {
       });
     }
   }
+
+  @Put('/setOrUpdateInfo')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRoles.ADMIN, UserRoles.USER)
+  async setOrUpdateInfo(
+    @Req() req: Request,
+    @Body() userProfileDto: UserProfileDto,
+  ): Promise<{ status: number; message: string; data: unknown }> {
+    try {
+      const reqUser: User = req.user as User;
+      if (!reqUser) throw new NotFoundException(Messages.USER_NOT_FOUND);
+
+      const loggedInUserId = reqUser.id;
+      const userId = parseInt(req.params.userId);
+      const userRole: UserRole =
+        await this.userRoleService.getByUserId(loggedInUserId);
+      if (userRole.role.name !== UserRoles.ADMIN || userId === loggedInUserId)
+        throw new UnauthorizedException();
+      const dataReponse = await this.userService.setOrUpdateInfo(
+        reqUser.id,
+        userProfileDto,
+      );
+      return {
+        status: HttpStatus.OK,
+        message: Messages.UPDATE_USER,
+        data: dataReponse,
+      };
+    } catch (error) {
+      throw new InternalServerErrorException({
+        message: Messages.INTERNAL_SERVER_ERROR,
+      });
+    }
 
   @Post(':username/giveAdmin')
   @Roles(UserRoles.ADMIN)

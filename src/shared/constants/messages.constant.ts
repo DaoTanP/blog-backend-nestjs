@@ -9,6 +9,7 @@ export const Messages = {
   EMAIL_DUPLICATED: 'Email already exists',
   COMMENT_NOT_FOUND: 'Comment not found',
   INTERNAL_SERVER_ERROR: 'An error occurred while processing your request',
+  UPDATE_USER: 'Update user profile successfully!',
   USERNAME_EXIST: 'Username is already taken',
   EMAIL_EXIST: 'Email is already taken',
   GIVE_ADMIN: 'Admin role has been assigned.',
