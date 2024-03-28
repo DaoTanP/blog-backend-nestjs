@@ -26,10 +26,15 @@ import { UserRoles } from '@shared/constants/role.enum';
 import { Request } from 'express';
 import { UserDTO } from './dto/user.dto';
 import { UserProfileDto } from './dto/userProfile.dto';
+import { UserRoleService } from '../auth/services/user-role.service';
+import { UserRole } from '../auth/entities/user-role.entity';
 
 @Controller('api/v1/users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly userRoleService: UserRoleService,
+  ) {}
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
@@ -187,7 +192,7 @@ export class UserController {
         message: Messages.INTERNAL_SERVER_ERROR,
       });
     }
-
+  }
   @Post(':username/giveAdmin')
   @Roles(UserRoles.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
