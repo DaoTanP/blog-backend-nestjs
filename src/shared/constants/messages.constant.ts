@@ -18,4 +18,5 @@ export const Messages = {
   USER_IS_ADMIN: 'User is admin.',
   USER_NOT_ADMIN: 'User not admin.',
   ALBUM_NOT_FOUND: 'Album not found',
+  PHOTO_NOT_FOUND: 'Photo not found',
 };

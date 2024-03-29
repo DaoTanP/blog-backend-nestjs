@@ -50,6 +50,9 @@ export class AlbumController {
     @Req() req: Request,
     @Body() formData: AlbumDto,
   ): Promise<Album> {
+    const album: Album = await this.albumService.getById(formData.userId);
+    if (!album) throw new NotFoundException(Messages.ALBUM_NOT_FOUND);
+
     return await this.albumService.addAlbum(formData, req.user as User);
   }
 
