@@ -46,7 +46,7 @@ export class CommentRepository extends Repository<Comment> {
     post: Post,
   ): Promise<Comment> {
     const comment: Comment = this.create({
-      name: user.username,
+      name: user.firstName + ' ' + user.lastName,
       email: user.email,
       body: commentBody,
     });
@@ -61,7 +61,10 @@ export class CommentRepository extends Repository<Comment> {
     postId: number,
     commentBody: string,
   ): Promise<Comment> {
-    const comment: Comment = await this.getById(id, postId);
+    // can not reuse getById because it only selects a part of user entity relation
+    const comment: Comment = await this.findOne({
+      where: { id, post: { id: postId } },
+    });
     comment.body = commentBody;
 
     return this.save(comment);

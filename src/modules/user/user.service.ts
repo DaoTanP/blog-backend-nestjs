@@ -69,9 +69,16 @@ export class UserService {
     return user ? false : true;
   }
 
-  async hasPermission(username: string, user: User): Promise<boolean> {
+  async hasPermission(
+    username: string,
+    user: User,
+    skipCheckRoles: UserRoles[] = [UserRoles.ADMIN],
+  ): Promise<boolean> {
     const userRole: UserRole = await this.userRoleService.getByUserId(user.id);
-    if (user.username !== username && userRole.role.name !== UserRoles.ADMIN)
+    if (
+      user.username !== username &&
+      !skipCheckRoles.includes(userRole.role.name)
+    )
       return false;
 
     return true;

@@ -1,33 +1,31 @@
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
   Get,
   HttpStatus,
-  InternalServerErrorException,
-  NotFoundException,
   Param,
   Post,
   Put,
   Query,
   Req,
-  UnauthorizedException,
   UseGuards,
+  NotFoundException,
+  BadRequestException,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '@modules/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '@shared/guards/jwt-auth.guard';
 import { UserService } from './user.service';
 import { isAlphanumeric, isEmail } from 'class-validator';
 import { User } from './entities/user.entity';
 import { Messages } from '@shared/constants/messages.constant';
-import { RolesGuard } from '@modules/auth/guards/roles.guard';
-import { Roles } from '@modules/auth/decorators/roles.decorator';
+import { RolesGuard } from '@shared/guards/roles.guard';
+import { Roles } from '@shared/decorators/roles.decorator';
 import { UserRoles } from '@shared/constants/role.enum';
 import { Request } from 'express';
 import { UserDTO } from './dto/user.dto';
 import { UserProfileDto } from './dto/userProfile.dto';
-import { UserRoleService } from '../auth/services/user-role.service';
-import { UserRole } from '../auth/entities/user-role.entity';
+import { Owner } from '@/shared/decorators/owner.decorator';
+import { PermissionGuard } from '@/shared/guards/permission.guard';
 
 @Controller('api/v1/users')
 export class UserController {
@@ -67,13 +65,7 @@ export class UserController {
         message: Messages.USERNAME_INVALID,
       });
 
-    try {
-      return this.userService.isUsernameAvailable(username);
-    } catch (error) {
-      throw new InternalServerErrorException({
-        message: Messages.INTERNAL_SERVER_ERROR,
-      });
-    }
+    return this.userService.isUsernameAvailable(username);
   }
 
   @Get('checkEmailAvailability')
@@ -90,13 +82,7 @@ export class UserController {
         message: Messages.EMAIL_INVALID,
       });
 
-    try {
-      return this.userService.isEmailAvailable(email);
-    } catch (error) {
-      throw new InternalServerErrorException({
-        message: Messages.INTERNAL_SERVER_ERROR,
-      });
-    }
+    return this.userService.isEmailAvailable(email);
   }
 
   @Post()
@@ -104,15 +90,16 @@ export class UserController {
   @Roles(UserRoles.ADMIN)
   async addUser(@Body() formData: UserDTO): Promise<unknown> {
     if (await this.userService.getAccountByUsername(formData.username))
-      throw new BadRequestException(Messages.USERNAME_DUPLICATED);
+      throw new BadRequestException(Messages.USERNAME_EXIST);
     if (await this.userService.getAccountByEmail(formData.email))
-      throw new BadRequestException(Messages.EMAIL_DUPLICATED);
+      throw new BadRequestException(Messages.EMAIL_EXIST);
 
     return this.userService.addUser(formData);
   }
 
   @Put(':username')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @Owner('username')
   async updateUser(
     @Req() req: Request,
     @Param('username') username: string,
@@ -121,26 +108,12 @@ export class UserController {
     const userToUpdate: User = await this.userService.getByUsername(username);
     if (!userToUpdate) throw new NotFoundException(Messages.USER_NOT_FOUND);
 
-    if (!(await this.userService.hasPermission(username, req.user as User)))
-      throw new UnauthorizedException();
-    // `User ${username} cannot be updated by ${user.username} with role ${userRole.role.name}`,
-
-    if (await this.userService.getAccountByUsername(formData.username))
-      throw new BadRequestException(Messages.USERNAME_DUPLICATED);
-    if (await this.userService.getAccountByEmail(formData.email))
-      throw new BadRequestException(Messages.EMAIL_DUPLICATED);
-
-    try {
-      return this.userService.updateById(userToUpdate.id, formData);
-    } catch (error) {
-      throw new InternalServerErrorException({
-        message: Messages.INTERNAL_SERVER_ERROR,
-      });
-    }
+    return this.userService.updateById(userToUpdate.id, formData);
   }
 
   @Delete(':username')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @Owner('username')
   async deleteUser(
     @Req() req: Request,
     @Param('username') username: string,
@@ -148,64 +121,42 @@ export class UserController {
     const userToDelete: User = await this.userService.getByUsername(username);
     if (!userToDelete) throw new NotFoundException(Messages.USER_NOT_FOUND);
 
-    if (!(await this.userService.hasPermission(username, req.user as User)))
-      throw new UnauthorizedException();
-    // `User ${username} cannot be deleted by ${user.username} with role ${userRole.role.name}`,
-
-    try {
-      return this.userService.deleteById(userToDelete.id);
-    } catch (error) {
-      throw new InternalServerErrorException({
-        message: Messages.INTERNAL_SERVER_ERROR,
-      });
-    }
+    return this.userService.deleteById(userToDelete.id);
   }
 
   @Put('/setOrUpdateInfo')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(UserRoles.ADMIN, UserRoles.USER)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @Owner({ idParamName: 'username', type: User, requestType: 'body' })
   async setOrUpdateInfo(
     @Req() req: Request,
     @Body() userProfileDto: UserProfileDto,
   ): Promise<{ status: number; message: string; data: unknown }> {
-    try {
-      const reqUser: User = req.user as User;
-      if (!reqUser) throw new NotFoundException(Messages.USER_NOT_FOUND);
+    const reqUser: User = req.user as User;
 
-      const loggedInUserId = reqUser.id;
-      const userId = parseInt(req.params.userId);
-      const userRole: UserRole =
-        await this.userRoleService.getByUserId(loggedInUserId);
-      if (userRole.role.name !== UserRoles.ADMIN || userId === loggedInUserId)
-        throw new UnauthorizedException();
-      const dataReponse = await this.userService.setOrUpdateInfo(
-        reqUser.id,
-        userProfileDto,
-      );
-      return {
-        status: HttpStatus.OK,
-        message: Messages.UPDATE_USER,
-        data: dataReponse,
-      };
-    } catch (error) {
-      throw new InternalServerErrorException({
-        message: Messages.INTERNAL_SERVER_ERROR,
-      });
-    }
+    const dataReponse = await this.userService.setOrUpdateInfo(
+      reqUser.id,
+      userProfileDto,
+    );
+    return {
+      status: HttpStatus.OK,
+      message: Messages.UPDATE_USER,
+      data: dataReponse,
+    };
   }
+
   @Post(':username/giveAdmin')
-  @Roles(UserRoles.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  giveAdmin(
+  @Roles(UserRoles.ADMIN)
+  async giveAdmin(
     @Param('username') username: string,
   ): Promise<{ statusCode: HttpStatus; message: string; data: User }> {
     return this.userService.giveAdmin(username);
   }
 
   @Post(':username/takeAdmin')
-  @Roles(UserRoles.ADMIN)
   @UseGuards(JwtAuthGuard, RolesGuard)
-  takeAdmin(
+  @Roles(UserRoles.ADMIN)
+  async takeAdmin(
     @Param('username') username: string,
   ): Promise<{ statusCode: HttpStatus; message: string; data: User }> {
     return this.userService.takeAdmin(username);

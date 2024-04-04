@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  HttpException,
-  Injectable,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { SignInDTO } from '@modules/auth/dto/signIn.dto';
 import { isEmail } from 'class-validator';
@@ -53,30 +48,26 @@ export class AuthService {
   }
 
   async signUp(signUpDTO: SignUpDTO) {
-    try {
-      const usernameExists = await this.userRepository.getAccountByUsername(
-        signUpDTO.username,
-      );
-      if (usernameExists) {
-        throw new BadRequestException(Messages.USERNAME_EXIST);
-      }
-      const emailExists = await this.userRepository.getAccountByEmail(
-        signUpDTO.email,
-      );
-      if (emailExists) {
-        throw new BadRequestException(Messages.EMAIL_EXIST);
-      }
-
-      const user = await this.userRepository.create({
-        ...signUpDTO,
-      });
-      await this.userRepository.save(user);
-
-      return user;
-    } catch (error) {
-      throw error instanceof HttpException
-        ? error
-        : new InternalServerErrorException(Messages.INTERNAL_SERVER_ERROR);
+    const usernameExists = await this.userRepository.getAccountByUsername(
+      signUpDTO.username,
+    );
+    if (usernameExists) {
+      throw new BadRequestException(Messages.USERNAME_EXIST);
     }
+    const emailExists = await this.userRepository.getAccountByEmail(
+      signUpDTO.email,
+    );
+    if (emailExists) {
+      throw new BadRequestException(Messages.EMAIL_EXIST);
+    }
+    const hashedPassword = await bcrypt.hash(signUpDTO.password, 10);
+
+    const user = this.userRepository.create({
+      ...signUpDTO,
+      password: hashedPassword,
+    });
+    await this.userRepository.save(user);
+
+    return user;
   }
 }
