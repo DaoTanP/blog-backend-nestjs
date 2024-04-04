@@ -8,21 +8,19 @@ import {
   Req,
   UseGuards,
   Put,
+  NotFoundException,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { JwtAuthGuard } from '@shared/guards/jwt-auth.guard';
 import { Todo } from './entities/todo.entity';
 import { User } from '@modules/user/entities/user.entity';
-import { UserService } from '@modules/user/user.service';
 import { TodoService } from './todo.service';
 import { TodoDTO } from './dto/todo.dto';
+import { Messages } from '@shared/constants/messages.constant';
 
 @Controller('api/v1/todos')
 export class TodoController {
-  constructor(
-    private readonly userService: UserService,
-    private readonly todoService: TodoService,
-  ) {}
+  constructor(private readonly todoService: TodoService) {}
 
   @Get()
   @UseGuards(JwtAuthGuard)
@@ -37,7 +35,13 @@ export class TodoController {
   async getById(@Req() req: Request, @Param('id') id: number): Promise<Todo> {
     const user: User = req.user as User;
 
-    return this.todoService.getById(id, user.id);
+    const todo = await this.todoService.getById(id, user.id);
+
+    if (todo) return todo;
+
+    throw new NotFoundException({
+      message: Messages.TODO_NOT_FOUND,
+    });
   }
 
   @Post()
@@ -57,6 +61,9 @@ export class TodoController {
   ): Promise<Todo> {
     const user: User = req.user as User;
 
+    const todo: Todo = await this.todoService.getById(id, user.id);
+    if (!todo) throw new NotFoundException(Messages.POST_NOT_FOUND);
+
     return this.todoService.updateTodo(id, user.id, formData);
   }
 
@@ -67,6 +74,9 @@ export class TodoController {
     @Param('id') id: number,
   ): Promise<boolean> {
     const user: User = req.user as User;
+
+    const todo: Todo = await this.todoService.getById(id, user.id);
+    if (!todo) throw new NotFoundException(Messages.POST_NOT_FOUND);
 
     return this.todoService.markCompleted(id, user.id, true);
   }
@@ -79,6 +89,9 @@ export class TodoController {
   ): Promise<boolean> {
     const user: User = req.user as User;
 
+    const todo: Todo = await this.todoService.getById(id, user.id);
+    if (!todo) throw new NotFoundException(Messages.POST_NOT_FOUND);
+
     return this.todoService.markCompleted(id, user.id, false);
   }
 
@@ -89,6 +102,9 @@ export class TodoController {
     @Param('id') id: number,
   ): Promise<boolean> {
     const user: User = req.user as User;
+
+    const todo: Todo = await this.todoService.getById(id, user.id);
+    if (!todo) throw new NotFoundException(Messages.POST_NOT_FOUND);
 
     return this.todoService.deleteById(id, user.id);
   }

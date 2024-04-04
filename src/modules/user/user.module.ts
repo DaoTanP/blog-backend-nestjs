@@ -10,6 +10,10 @@ import { AddressRepository } from './repositories/address.repository';
 import { GeoRepository } from './repositories/geo.repository';
 import { CompanyRepository } from './repositories/company.repository';
 import { RoleRepository } from '@modules/auth/repositories/role.repository';
+import { PostService } from '@modules/post/post.service';
+import { PostRepository } from '@modules/post/repositories/post.repository';
+import { CommentService } from '@modules/comment/comment.service';
+import { CommentRepository } from '@modules/comment/repositories/comment.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User])],
@@ -18,6 +22,10 @@ import { RoleRepository } from '@modules/auth/repositories/role.repository';
     UserService,
     UserRepository,
     UserRoleService,
+    PostService,
+    PostRepository,
+    CommentService,
+    CommentRepository,
     UserRoleRepository,
     RoleRepository,
     AddressRepository,

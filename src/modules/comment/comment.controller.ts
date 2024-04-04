@@ -8,9 +8,7 @@ import {
   Param,
   Req,
   UseGuards,
-  InternalServerErrorException,
   NotFoundException,
-  UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
 import { UserService } from '@modules/user/user.service';
@@ -21,6 +19,8 @@ import { User } from '@modules/user/entities/user.entity';
 import { Comment } from './entities/comment.entity';
 import { PostService } from '@modules/post/post.service';
 import { Post as PostEntity } from '@modules/post/entities/post.entity';
+import { Owner } from '@/shared/decorators/owner.decorator';
+import { PermissionGuard } from '@/shared/guards/permission.guard';
 
 @Controller('api/v1/posts/:postId/comments')
 export class CommentController {
@@ -75,9 +75,12 @@ export class CommentController {
   }
 
   @Put(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @Owner({
+    idParamName: { selfIdParam: 'id', parentIdParam: 'postId' },
+    type: Comment,
+  })
   async updateComment(
-    @Req() req: Request,
     @Param('postId') postId: number,
     @Param('id') id: number,
     @Body() formData: { body: string },
@@ -92,27 +95,16 @@ export class CommentController {
     if (!commentToUpdate)
       throw new NotFoundException(Messages.COMMENT_NOT_FOUND);
 
-    if (
-      !(await this.userService.hasPermission(
-        commentToUpdate.user.username,
-        req.user as User,
-      ))
-    )
-      throw new UnauthorizedException();
-
-    try {
-      return this.commentService.updateById(id, postId, formData.body);
-    } catch (error) {
-      throw new InternalServerErrorException({
-        message: Messages.INTERNAL_SERVER_ERROR,
-      });
-    }
+    return this.commentService.updateById(id, postId, formData.body);
   }
 
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, PermissionGuard)
+  @Owner({
+    idParamName: { selfIdParam: 'id', parentIdParam: 'postId' },
+    type: Comment,
+  })
   async deleteComment(
-    @Req() req: Request,
     @Param('postId') postId: number,
     @Param('id') id: number,
   ): Promise<boolean | unknown> {
@@ -126,20 +118,6 @@ export class CommentController {
     if (!commentToDelete)
       throw new NotFoundException(Messages.COMMENT_NOT_FOUND);
 
-    if (
-      !(await this.userService.hasPermission(
-        commentToDelete.user.username,
-        req.user as User,
-      ))
-    )
-      throw new UnauthorizedException();
-
-    try {
-      return this.commentService.deleteById(id, postId);
-    } catch (error) {
-      throw new InternalServerErrorException({
-        message: Messages.INTERNAL_SERVER_ERROR,
-      });
-    }
+    return this.commentService.deleteById(id, postId);
   }
 }

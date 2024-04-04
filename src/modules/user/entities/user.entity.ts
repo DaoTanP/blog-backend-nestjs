@@ -12,12 +12,11 @@ import {
 import { Address } from './address.entity';
 import { Company } from './company.entity';
 import * as bcrypt from 'bcrypt';
-import { Post } from '@/modules/post/entities/post.entity';
+import { Post } from '@modules/post/entities/post.entity';
 
 @Entity('users')
 export class User extends BaseEntity {
   @PrimaryGeneratedColumn('increment', { type: 'bigint', unsigned: true })
-  // @PrimaryGeneratedColumn('increment')
   id: number;
 
   @Column('varchar', { name: 'first_name', nullable: false, length: 255 })
