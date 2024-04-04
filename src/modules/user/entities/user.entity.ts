@@ -71,6 +71,9 @@ export class User extends BaseEntity {
   @OneToMany(() => Post, (post: Post) => post.user)
   posts: Post[];
 
+  @OneToMany(() => Album, (album: Album) => album.user)
+  albums: Album[];
+
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword(password: string): Promise<void> {

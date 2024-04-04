@@ -29,7 +29,10 @@ import { PermissionGuard } from '@/shared/guards/permission.guard';
 
 @Controller('api/v1/users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly userRoleService: UserRoleService,
+  ) {}
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
