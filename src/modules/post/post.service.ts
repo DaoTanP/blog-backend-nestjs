@@ -8,23 +8,23 @@ import { User } from '@modules/user/entities/user.entity';
 export class PostService {
   constructor(private readonly postRepository: PostRepository) {}
 
-  async getAll(): Promise<Post[]> {
+  getAll(): Promise<Post[]> {
     return this.postRepository.getAll();
   }
 
-  async getById(id: number): Promise<Post> {
+  getById(id: string): Promise<Post> {
     return this.postRepository.getById(id);
   }
 
-  async addPost(postDto: PostDTO, user: User): Promise<Post> {
+  addPost(postDto: PostDTO, user: User): Promise<Post> {
     return this.postRepository.addPost(postDto, user);
   }
 
-  async updateById(id: number, postDto: PostDTO): Promise<Post> {
+  updateById(id: string, postDto: PostDTO): Promise<Post> {
     return this.postRepository.updateById(id, postDto);
   }
 
-  async deleteById(id: number): Promise<boolean> {
+  deleteById(id: string): Promise<boolean> {
     return this.postRepository.deleteById(id);
   }
 }

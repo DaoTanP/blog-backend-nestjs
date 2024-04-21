@@ -13,7 +13,7 @@
     "start:debug": "nest start --debug --watch",
     "start:prod": "node dist/main",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli -d src/shared/config/dataSource.config.ts",
+    "typeorm": "ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli -d src/shared/config/data-source.config.ts",
     "migration:generate": "npm run typeorm -- migration:generate src/shared/database/migrations/migration",
     "migration:create": "npm run typeorm -- migration:create src/shared/database/migrations/migration",
     "migration:run": "npm run typeorm -- migration:run",

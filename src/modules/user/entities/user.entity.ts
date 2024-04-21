@@ -3,81 +3,97 @@ import {
   PrimaryGeneratedColumn,
   Column,
   BaseEntity,
-  ManyToOne,
-  JoinColumn,
   BeforeInsert,
   OneToMany,
   BeforeUpdate,
+  CreateDateColumn,
+  DeleteDateColumn,
+  UpdateDateColumn,
+  ManyToMany,
+  JoinTable,
+  AfterInsert,
 } from 'typeorm';
-import { Address } from './address.entity';
-import { Company } from './company.entity';
 import * as bcrypt from 'bcrypt';
 import { Post } from '@modules/post/entities/post.entity';
+import { Role } from '@/modules/auth/entities/role.entity';
+import { RoleEnum } from '@/shared/constants/role.enum';
 
 @Entity('users')
 export class User extends BaseEntity {
-  @PrimaryGeneratedColumn('increment', { type: 'bigint', unsigned: true })
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
-  @Column('varchar', { name: 'first_name', nullable: false, length: 255 })
-  firstName: string;
-
-  @Column('varchar', { name: 'last_name', nullable: false, length: 255 })
-  lastName: string;
-
-  @Column('varchar', { nullable: false, length: 255, unique: true })
+  @Column('varchar', { nullable: false, length: 30, unique: true })
   username: string;
-
-  @Column('varchar', { nullable: false, length: 255, select: false })
-  password: string;
 
   @Column('varchar', { nullable: false, length: 255, unique: true })
   email: string;
 
-  @Column('varchar', { length: 255 })
-  phone: string;
+  @Column('varchar', { nullable: false, length: 255, select: false })
+  password: string;
 
-  @Column('varchar', { length: 255 })
-  website: string;
+  @Column('nvarchar', { name: 'display_name', nullable: false, length: 50 })
+  displayName: string;
 
-  @Column('timestamp', {
-    name: 'created_at',
-    default: () => 'CURRENT_TIMESTAMP',
-    select: false,
-  })
+  @Column('nvarchar', { default: null, length: 200 })
+  biography: string;
+
+  @Column('varchar', { name: 'avatar_image', default: null })
+  avatarImage: string;
+
+  @Column('varchar', { name: 'banner_image', default: null })
+  bannerImage: string;
+
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @Column('timestamp', {
-    name: 'updated_at',
-    default: () => 'CURRENT_TIMESTAMP',
-    select: false,
-  })
+  @UpdateDateColumn({ name: 'updated_at', select: false })
   updatedAt: Date;
 
-  @ManyToOne(() => Address, (address: Address) => address.users, {
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-  })
-  @JoinColumn({ name: 'address_id', foreignKeyConstraintName: 'fk_address' })
-  address: Address;
-
-  @ManyToOne(() => Company, (company: Company) => company.users, {
-    onDelete: 'CASCADE',
-    onUpdate: 'CASCADE',
-  })
-  @JoinColumn({ name: 'company_id', foreignKeyConstraintName: 'fk_company' })
-  company: Company;
+  @DeleteDateColumn({ name: 'deleted_at', select: false })
+  deletedAt: Date;
 
   @OneToMany(() => Post, (post: Post) => post.user)
   posts: Post[];
 
-  @OneToMany(() => Album, (album: Album) => album.user)
-  albums: Album[];
+  @ManyToMany(() => Role, (role: Role) => role.users)
+  @JoinTable({
+    name: 'user_role',
+    joinColumn: { name: 'user_id' },
+    inverseJoinColumn: { name: 'role_id' },
+  })
+  roles: Role[];
 
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword(password: string): Promise<void> {
-    const salt = await bcrypt.genSalt();
+    const salt: string = await bcrypt.genSalt();
     this.password = await bcrypt.hash(password || this.password, salt);
+  }
+
+  @BeforeInsert()
+  assignDisplayNameIfNull(): void {
+    if (this.displayName && this.displayName !== '') return;
+
+    this.displayName = this.username;
+  }
+
+  // @BeforeInsert()
+  // async assignRoleBeforeInsert(): Promise<void> {
+  //   const role: Role = await Role.findOne({
+  //     where: { name: RoleEnum.USER },
+  //   });
+  //   this.roles = [role];
+  // }
+
+  @AfterInsert()
+  async assignRole(): Promise<void> {
+    const role: Role = await Role.findOne({
+      where: { name: RoleEnum.USER },
+      relations: { users: true },
+    });
+
+    role.users.push(this);
+    role.save();
   }
 }

@@ -7,8 +7,6 @@ import { UserModule } from './modules/user/user.module';
 import { PostModule } from './modules/post/post.module';
 import { CommentModule } from './modules/comment/comment.module';
 import { TodoModule } from './modules/todo/todo.module';
-import { AlbumModule } from './modules/album/album.module';
-import { PhotoModule } from './modules/photo/photo.module';
 
 @Module({
   imports: [
@@ -19,8 +17,6 @@ import { PhotoModule } from './modules/photo/photo.module';
     PostModule,
     CommentModule,
     TodoModule,
-    AlbumModule,
-    PhotoModule,
   ],
   controllers: [],
   providers: [],

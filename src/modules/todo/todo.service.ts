@@ -8,35 +8,31 @@ import { User } from '@modules/user/entities/user.entity';
 export class TodoService {
   constructor(private readonly todoRepository: TodoRepository) {}
 
-  async getByUserId(userId: number): Promise<Todo[]> {
+  getByUserId(userId: string): Promise<Todo[]> {
     return this.todoRepository.getByUserId(userId);
   }
 
-  async getById(id: number, userId: number): Promise<Todo> {
+  getById(id: string, userId: string): Promise<Todo> {
     return this.todoRepository.getById(id, userId);
   }
 
-  async addTodo(todoDto: TodoDTO, user: User): Promise<Todo> {
+  addTodo(todoDto: TodoDTO, user: User): Promise<Todo> {
     return this.todoRepository.addTodo(todoDto, user);
   }
 
-  async updateTodo(
-    id: number,
-    userId: number,
-    todoDto: TodoDTO,
-  ): Promise<Todo> {
+  updateTodo(id: string, userId: string, todoDto: TodoDTO): Promise<Todo> {
     return this.todoRepository.updateTodo(id, userId, todoDto);
   }
 
-  async markCompleted(
-    id: number,
-    userId: number,
+  markCompleted(
+    id: string,
+    userId: string,
     completed: boolean = true,
   ): Promise<boolean> {
     return this.todoRepository.markCompleted(id, userId, completed);
   }
 
-  async deleteById(id: number, userId: number): Promise<boolean> {
+  deleteById(id: string, userId: string): Promise<boolean> {
     return this.todoRepository.deleteById(id, userId);
   }
 }

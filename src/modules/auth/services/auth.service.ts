@@ -1,23 +1,21 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
-import { SignInDTO } from '@modules/auth/dto/signIn.dto';
+import { SignInDTO } from '@/modules/auth/dto/sign-in.dto';
 import { isEmail } from 'class-validator';
 import { JwtService } from '@nestjs/jwt';
 import { UserService } from '@modules/user/user.service';
 import { User } from '@modules/user/entities/user.entity';
-import { UserRoleService } from './user-role.service';
-import { SignUpDTO } from '../dto/signUp.dto';
-import { UserRepository } from '@/modules/user/repositories/user.repository';
-import { Messages } from '@/shared/constants/messages.constant';
-import { UserRole } from '@modules/auth/entities/user-role.entity';
+import { SignUpDTO } from '@modules/auth/dto/sign-up.dto';
+import { Role } from '@modules/auth/entities/role.entity';
+import { Messages } from '@/shared/constants/messages.enum';
+import { RoleEnum } from '@/shared/constants/role.enum';
+import { JwtPayload } from '@/shared/constants/jwt-payload.interface';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
-    private readonly userRoleService: UserRoleService,
-    private readonly userRepository: UserRepository,
   ) {}
 
   async validateUser(signInDTO: SignInDTO): Promise<User | null> {
@@ -36,38 +34,49 @@ export class AuthService {
     return this.userService.getById(account.id);
   }
 
-  async generateToken(user: any): Promise<{ access_token: string }> {
-    const userRole: UserRole = await this.userRoleService.getByUserId(user.id);
+  generateToken(user: User): { access_token: string } {
+    const payload: JwtPayload = {
+      id: user.id,
+      username: user.username,
+      roles: user.roles.map((role: Role) => role.name),
+    };
+
     return {
-      access_token: this.jwtService.sign({
-        id: user.id,
-        username: user.username,
-        role: userRole.role.name,
-      }),
+      access_token: this.jwtService.sign(payload),
     };
   }
 
-  async signUp(signUpDTO: SignUpDTO) {
-    const usernameExists = await this.userRepository.getAccountByUsername(
+  async signUp(signUpDTO: SignUpDTO): Promise<User | Error> {
+    const usernameExists: boolean = await this.userService.isUsernameAvailable(
       signUpDTO.username,
     );
     if (usernameExists) {
-      throw new BadRequestException(Messages.USERNAME_EXIST);
+      throw new Error(Messages.USERNAME_EXIST);
     }
-    const emailExists = await this.userRepository.getAccountByEmail(
+
+    const emailExists: boolean = await this.userService.isEmailAvailable(
       signUpDTO.email,
     );
     if (emailExists) {
-      throw new BadRequestException(Messages.EMAIL_EXIST);
+      throw new Error(Messages.EMAIL_EXIST);
     }
-    const hashedPassword = await bcrypt.hash(signUpDTO.password, 10);
 
-    const user = this.userRepository.create({
-      ...signUpDTO,
-      password: hashedPassword,
-    });
-    await this.userRepository.save(user);
+    return this.userService.addUser(signUpDTO);
+  }
 
-    return user;
+  hasPermission(
+    username: string,
+    user: User,
+    skipCheckRoles: RoleEnum[] = [RoleEnum.ADMIN],
+  ): boolean {
+    if (
+      user.username !== username &&
+      !skipCheckRoles.some((roleToSkip: RoleEnum) =>
+        user.roles.map((userRole: Role) => userRole.name).includes(roleToSkip),
+      )
+    )
+      return false;
+
+    return true;
   }
 }

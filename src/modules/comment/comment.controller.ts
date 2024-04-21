@@ -14,7 +14,7 @@ import { Request } from 'express';
 import { UserService } from '@modules/user/user.service';
 import { CommentService } from './comment.service';
 import { JwtAuthGuard } from '@shared/guards/jwt-auth.guard';
-import { Messages } from '@shared/constants/messages.constant';
+import { Messages } from '@/shared/constants/messages.enum';
 import { User } from '@modules/user/entities/user.entity';
 import { Comment } from './entities/comment.entity';
 import { PostService } from '@modules/post/post.service';
@@ -22,7 +22,7 @@ import { Post as PostEntity } from '@modules/post/entities/post.entity';
 import { Owner } from '@/shared/decorators/owner.decorator';
 import { PermissionGuard } from '@/shared/guards/permission.guard';
 
-@Controller('api/v1/posts/:postId/comments')
+@Controller('posts/:postId/comments')
 export class CommentController {
   constructor(
     private readonly commentService: CommentService,
@@ -32,7 +32,7 @@ export class CommentController {
 
   @Get()
   async getAllComment(
-    @Param('postId') postId: number,
+    @Param('postId') postId: string,
   ): Promise<Comment[] | unknown> {
     const post: PostEntity = await this.postService.getById(postId);
     if (!post) throw new NotFoundException(Messages.POST_NOT_FOUND);
@@ -42,8 +42,8 @@ export class CommentController {
 
   @Get(':id')
   async getCommentById(
-    @Param('postId') postId: number,
-    @Param('id') id: number,
+    @Param('postId') postId: string,
+    @Param('id') id: string,
   ): Promise<Comment | unknown> {
     const post: PostEntity = await this.postService.getById(postId);
     if (!post) throw new NotFoundException(Messages.POST_NOT_FOUND);
@@ -61,7 +61,7 @@ export class CommentController {
   @UseGuards(JwtAuthGuard)
   async addComment(
     @Req() req: Request,
-    @Param('postId') postId: number,
+    @Param('postId') postId: string,
     @Body() formData: { body: string },
   ): Promise<Comment | unknown> {
     const post: PostEntity = await this.postService.getById(postId);
@@ -81,8 +81,8 @@ export class CommentController {
     type: Comment,
   })
   async updateComment(
-    @Param('postId') postId: number,
-    @Param('id') id: number,
+    @Param('postId') postId: string,
+    @Param('id') id: string,
     @Body() formData: { body: string },
   ): Promise<Comment | unknown> {
     const post: PostEntity = await this.postService.getById(postId);
@@ -105,8 +105,8 @@ export class CommentController {
     type: Comment,
   })
   async deleteComment(
-    @Param('postId') postId: number,
-    @Param('id') id: number,
+    @Param('postId') postId: string,
+    @Param('id') id: string,
   ): Promise<boolean | unknown> {
     const post: PostEntity = await this.postService.getById(postId);
     if (!post) throw new NotFoundException(Messages.POST_NOT_FOUND);

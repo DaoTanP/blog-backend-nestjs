@@ -24,7 +24,7 @@ export class CommentRepository extends Repository<Comment> {
     super(Comment, dataSource.createEntityManager());
   }
 
-  async getByPostId(postId: number): Promise<Comment[]> {
+  getByPostId(postId: string): Promise<Comment[]> {
     return this.find({
       where: { post: { id: postId } },
       select: this.findOptionsSelect,
@@ -32,7 +32,7 @@ export class CommentRepository extends Repository<Comment> {
     });
   }
 
-  async getById(id: number, postId: number): Promise<Comment> {
+  getById(id: string, postId: string): Promise<Comment> {
     return this.findOne({
       where: { id, post: { id: postId } },
       select: this.findOptionsSelect,
@@ -40,14 +40,8 @@ export class CommentRepository extends Repository<Comment> {
     });
   }
 
-  async addComment(
-    commentBody: string,
-    user: User,
-    post: Post,
-  ): Promise<Comment> {
+  addComment(commentBody: string, user: User, post: Post): Promise<Comment> {
     const comment: Comment = this.create({
-      name: user.firstName + ' ' + user.lastName,
-      email: user.email,
       body: commentBody,
     });
     comment.user = user;
@@ -57,8 +51,8 @@ export class CommentRepository extends Repository<Comment> {
   }
 
   async updateById(
-    id: number,
-    postId: number,
+    id: string,
+    postId: string,
     commentBody: string,
   ): Promise<Comment> {
     // can not reuse getById because it only selects a part of user entity relation
@@ -70,7 +64,7 @@ export class CommentRepository extends Repository<Comment> {
     return this.save(comment);
   }
 
-  async deleteById(id: number, postId: number): Promise<boolean> {
+  async deleteById(id: string, postId: string): Promise<boolean> {
     const deleteResult: DeleteResult = await this.delete({
       id,
       post: { id: postId },

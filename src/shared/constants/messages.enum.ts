@@ -1,0 +1,22 @@
+// eslint-disable-next-line no-shadow
+export enum Messages {
+  USER_NOT_FOUND = 'User not found',
+  USERNAME_EMPTY = 'Parameter named "username" must not be empty',
+  USERNAME_INVALID = 'Valid username must only contain alphanumeric characters',
+  USERNAME_EXIST = 'Username already exists',
+  EMAIL_EMPTY = 'Parameter named "email" must not be empty',
+  EMAIL_INVALID = 'Invalid email address',
+  POST_NOT_FOUND = 'Post not found',
+  EMAIL_EXIST = 'Email already exists',
+  COMMENT_NOT_FOUND = 'Comment not found',
+  INTERNAL_SERVER_ERROR = 'An error occurred while processing your request',
+  UPDATE_USER = 'Update user profile successfully!',
+  GIVE_ADMIN = 'Admin role has been assigned.',
+  TASK_ADMIN = 'Admin role has been revoked.',
+  USERROLE_NOT_FOUND = 'User role not found.',
+  USER_IS_ADMIN = 'User is admin.',
+  USER_NOT_ADMIN = 'User not admin.',
+  TODO_NOT_FOUND = 'Todo not found',
+  ALBUM_NOT_FOUND = 'Album not found',
+  PHOTO_NOT_FOUND = 'Photo not found',
+}

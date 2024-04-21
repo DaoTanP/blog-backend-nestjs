@@ -1,10 +1,10 @@
-import { SetMetadata, Type } from '@nestjs/common';
-import { UserRoles } from '../constants/role.enum';
+import { CustomDecorator, SetMetadata, Type } from '@nestjs/common';
+import { RoleEnum } from '@shared/constants/role.enum';
 
 export interface OwnerDecoratorParams {
   idParamName: string | { selfIdParam: string; parentIdParam: string };
   type?: Type;
-  skipCheckRoles?: UserRoles[];
+  skipCheckRoles?: RoleEnum[];
   requestType?: 'params' | 'body';
 }
 
@@ -15,7 +15,7 @@ export const Owner = <T>(
     | {
         idParamName: string | { selfIdParam: string; parentIdParam: string };
         type?: Type<T>;
-        skipCheckRoles?: UserRoles[];
+        skipCheckRoles?: RoleEnum[];
         requestType?: 'params' | 'body';
       } = 'username',
-) => SetMetadata('owner', param);
+): CustomDecorator<string> => SetMetadata('owner', param);

@@ -5,21 +5,21 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { UserService } from '@modules/user/user.service';
 import { Request } from 'express';
 import { User } from '@modules/user/entities/user.entity';
 import { Post } from '@modules/post/entities/post.entity';
 import { Comment } from '@modules/comment/entities/comment.entity';
 import { PostService } from '@modules/post/post.service';
 import { CommentService } from '@modules/comment/comment.service';
-import { Messages } from '@shared/constants/messages.constant';
-import { OwnerDecoratorParams } from '../decorators/owner.decorator';
+import { Messages } from '@/shared/constants/messages.enum';
+import { OwnerDecoratorParams } from '@shared/decorators/owner.decorator';
+import { AuthService } from '@/modules/auth/services/auth.service';
 
 @Injectable()
 export class PermissionGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    private userService: UserService,
+    private authService: AuthService,
     private postService: PostService,
     private commentService: CommentService,
   ) {}
@@ -34,12 +34,11 @@ export class PermissionGuard implements CanActivate {
 
     // assuming request.user is returned from the custom authentication guard
     if (request?.user) {
-      const { id } = request.user as User;
-      const user: User = await this.userService.getById(id);
-      const requestParams = request.params;
-      const requestBody = request.body;
+      const user: User = request.user as User;
+      const requestParams: any = request.params;
+      const requestBody: any = request.body;
       if (typeof ownerMetadata === 'string')
-        return this.userService.hasPermission(
+        return this.authService.hasPermission(
           requestParams[ownerMetadata],
           user,
         );
@@ -47,47 +46,44 @@ export class PermissionGuard implements CanActivate {
       switch (ownerMetadata.type) {
         case User:
           if (ownerMetadata.idParamName)
-            return this.userService.hasPermission(
+            return this.authService.hasPermission(
               requestParams[ownerMetadata.idParamName as string],
               user,
               ownerMetadata.skipCheckRoles,
             );
 
           if (ownerMetadata.requestType === 'body')
-            return this.userService.hasPermission(
+            return this.authService.hasPermission(
               requestBody[ownerMetadata.idParamName as string],
               user,
               ownerMetadata.skipCheckRoles,
             );
+          break;
 
-        case Post:
+        case Post: {
           const post: Post = await this.postService.getById(
-            parseInt(requestParams[ownerMetadata.idParamName as string], 10),
+            requestParams[ownerMetadata.idParamName as string],
           );
           if (!post) throw new NotFoundException(Messages.POST_NOT_FOUND);
-          return this.userService.hasPermission(
+          return this.authService.hasPermission(
             post.user.username,
             user,
             ownerMetadata.skipCheckRoles,
           );
+        }
 
-        case Comment:
+        case Comment: {
           const comment: Comment = await this.commentService.getById(
-            parseInt(
-              requestParams[ownerMetadata.idParamName['selfIdParam']],
-              10,
-            ),
-            parseInt(
-              requestParams[ownerMetadata.idParamName['parentIdParam']],
-              10,
-            ),
+            requestParams[ownerMetadata.idParamName['selfIdParam']],
+            requestParams[ownerMetadata.idParamName['parentIdParam']],
           );
           if (!comment) throw new NotFoundException(Messages.COMMENT_NOT_FOUND);
-          return this.userService.hasPermission(
+          return this.authService.hasPermission(
             comment.user.username,
             user,
             ownerMetadata.skipCheckRoles,
           );
+        }
 
         default:
           return false;

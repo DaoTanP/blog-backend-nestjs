@@ -13,7 +13,7 @@ const options: DataSourceOptions & SeederOptions = {
   seedTracking: false,
 };
 
-const dataSource = new DataSource(options);
+const dataSource: DataSource = new DataSource(options);
 
 // dataSource.initialize().then(async () => {
 //   console.log(options);

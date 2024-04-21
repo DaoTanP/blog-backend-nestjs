@@ -5,13 +5,19 @@ import {
   BaseEntity,
   ManyToOne,
   JoinColumn,
+  CreateDateColumn,
+  DeleteDateColumn,
+  UpdateDateColumn,
+  JoinTable,
+  ManyToMany,
 } from 'typeorm';
 import { User } from '@modules/user/entities/user.entity';
+import { Tag } from './tag.entity';
 
 @Entity('posts')
 export class Post extends BaseEntity {
-  @PrimaryGeneratedColumn('increment', { type: 'bigint', unsigned: true })
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column('varchar', { nullable: false, length: 255 })
   title: string;
@@ -19,40 +25,27 @@ export class Post extends BaseEntity {
   @Column('text', { nullable: false })
   body: string;
 
-  @Column('timestamp', {
-    name: 'created_at',
-    default: () => 'CURRENT_TIMESTAMP',
-    select: false,
-  })
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @Column('timestamp', {
-    name: 'updated_at',
-    default: () => 'CURRENT_TIMESTAMP',
-    select: false,
-  })
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @Column('bigint', {
-    name: 'created_by',
-    unsigned: true,
-    default: null,
-    select: false,
-  })
-  createdBy: number;
-
-  @Column('bigint', {
-    name: 'updated_by',
-    unsigned: true,
-    default: null,
-    select: false,
-  })
-  updatedBy: number;
+  @DeleteDateColumn({ name: 'deleted_at', select: false })
+  deletedAt: Date;
 
   @ManyToOne(() => User, (user: User) => user.posts, {
     onDelete: 'CASCADE',
     onUpdate: 'CASCADE',
   })
-  @JoinColumn({ name: 'user_id', foreignKeyConstraintName: 'fk_user_post' })
+  @JoinColumn({ name: 'user_id', foreignKeyConstraintName: 'fk_post_user' })
   user: User;
+
+  @ManyToMany(() => Tag, (tag: Tag) => tag.posts)
+  @JoinTable({
+    name: 'post_tag',
+    joinColumn: { name: 'post_id' },
+    inverseJoinColumn: { name: 'tag_id' },
+  })
+  tags: Tag[];
 }

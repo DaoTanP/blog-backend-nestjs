@@ -5,53 +5,29 @@ import {
   BaseEntity,
   JoinColumn,
   ManyToOne,
+  CreateDateColumn,
+  DeleteDateColumn,
+  UpdateDateColumn,
 } from 'typeorm';
 import { Post } from '@modules/post/entities/post.entity';
 import { User } from '@modules/user/entities/user.entity';
 
 @Entity('comments')
 export class Comment extends BaseEntity {
-  @PrimaryGeneratedColumn('increment', { type: 'bigint', unsigned: true })
-  id: number;
-
-  @Column('varchar', { length: 255, nullable: false })
-  name: string;
-
-  @Column('varchar', { length: 255, nullable: false })
-  email: string;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column('text', { nullable: false })
   body: string;
 
-  @Column('timestamp', {
-    name: 'created_at',
-    default: () => 'CURRENT_TIMESTAMP',
-    select: false,
-  })
+  @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
 
-  @Column('timestamp', {
-    name: 'updated_at',
-    default: () => 'CURRENT_TIMESTAMP',
-    select: false,
-  })
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
-  @Column('bigint', {
-    name: 'created_by',
-    unsigned: true,
-    default: null,
-    select: false,
-  })
-  createdBy: number;
-
-  @Column('bigint', {
-    name: 'updated_by',
-    unsigned: true,
-    default: null,
-    select: false,
-  })
-  updatedBy: number;
+  @DeleteDateColumn({ name: 'deleted_at', select: false })
+  deletedAt: Date;
 
   @ManyToOne(() => User)
   @JoinColumn({

@@ -1,40 +1,32 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity } from 'typeorm';
+import {
+  Entity,
+  PrimaryGeneratedColumn,
+  Column,
+  BaseEntity,
+  CreateDateColumn,
+  DeleteDateColumn,
+  UpdateDateColumn,
+  ManyToMany,
+} from 'typeorm';
+import { Post } from './post.entity';
 
 @Entity('tags')
 export class Tag extends BaseEntity {
-  @PrimaryGeneratedColumn('increment', { type: 'bigint', unsigned: true })
-  id: number;
+  @PrimaryGeneratedColumn('uuid')
+  id: string;
 
   @Column('varchar', { nullable: false, length: 255 })
   name: string;
 
-  @Column('timestamp', {
-    name: 'created_at',
-    default: () => 'CURRENT_TIMESTAMP',
-    select: false,
-  })
+  @CreateDateColumn({ name: 'created_at', select: false })
   createdAt: Date;
 
-  @Column('timestamp', {
-    name: 'updated_at',
-    default: () => 'CURRENT_TIMESTAMP',
-    select: false,
-  })
+  @UpdateDateColumn({ name: 'updated_at', select: false })
   updatedAt: Date;
 
-  @Column('bigint', {
-    name: 'created_by',
-    unsigned: true,
-    default: null,
-    select: false,
-  })
-  createdBy: number;
+  @DeleteDateColumn({ name: 'deleted_at', select: false })
+  deletedAt: Date;
 
-  @Column('bigint', {
-    name: 'updated_by',
-    unsigned: true,
-    default: null,
-    select: false,
-  })
-  updatedBy: number;
+  @ManyToMany(() => Post, (post: Post) => post.tags)
+  posts: Post[];
 }

@@ -16,15 +16,15 @@ import { Todo } from './entities/todo.entity';
 import { User } from '@modules/user/entities/user.entity';
 import { TodoService } from './todo.service';
 import { TodoDTO } from './dto/todo.dto';
-import { Messages } from '@shared/constants/messages.constant';
+import { Messages } from '@/shared/constants/messages.enum';
 
-@Controller('api/v1/todos')
+@Controller('todos')
 export class TodoController {
   constructor(private readonly todoService: TodoService) {}
 
   @Get()
   @UseGuards(JwtAuthGuard)
-  async getByUserId(@Req() req: Request): Promise<Todo[]> {
+  getByUserId(@Req() req: Request): Promise<Todo[]> {
     const user: User = req.user as User;
 
     return this.todoService.getByUserId(user.id);
@@ -32,10 +32,13 @@ export class TodoController {
 
   @Get(':id')
   @UseGuards(JwtAuthGuard)
-  async getById(@Req() req: Request, @Param('id') id: number): Promise<Todo> {
+  async getById(
+    @Req() req: Request,
+    @Param('id') id: string,
+  ): Promise<Todo | NotFoundException> {
     const user: User = req.user as User;
 
-    const todo = await this.todoService.getById(id, user.id);
+    const todo: Todo = await this.todoService.getById(id, user.id);
 
     if (todo) return todo;
 
@@ -46,7 +49,7 @@ export class TodoController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  async addTodo(@Req() req: Request, @Body() formData: TodoDTO): Promise<Todo> {
+  addTodo(@Req() req: Request, @Body() formData: TodoDTO): Promise<Todo> {
     const user: User = req.user as User;
 
     return this.todoService.addTodo(formData, user);
@@ -56,9 +59,9 @@ export class TodoController {
   @UseGuards(JwtAuthGuard)
   async updateTodo(
     @Req() req: Request,
-    @Param('id') id: number,
+    @Param('id') id: string,
     @Body() formData: TodoDTO,
-  ): Promise<Todo> {
+  ): Promise<Todo | NotFoundException> {
     const user: User = req.user as User;
 
     const todo: Todo = await this.todoService.getById(id, user.id);
@@ -71,8 +74,8 @@ export class TodoController {
   @UseGuards(JwtAuthGuard)
   async markCompleted(
     @Req() req: Request,
-    @Param('id') id: number,
-  ): Promise<boolean> {
+    @Param('id') id: string,
+  ): Promise<boolean | NotFoundException> {
     const user: User = req.user as User;
 
     const todo: Todo = await this.todoService.getById(id, user.id);
@@ -85,8 +88,8 @@ export class TodoController {
   @UseGuards(JwtAuthGuard)
   async markUncompleted(
     @Req() req: Request,
-    @Param('id') id: number,
-  ): Promise<boolean> {
+    @Param('id') id: string,
+  ): Promise<boolean | NotFoundException> {
     const user: User = req.user as User;
 
     const todo: Todo = await this.todoService.getById(id, user.id);
@@ -99,8 +102,8 @@ export class TodoController {
   @UseGuards(JwtAuthGuard)
   async deleteById(
     @Req() req: Request,
-    @Param('id') id: number,
-  ): Promise<boolean> {
+    @Param('id') id: string,
+  ): Promise<boolean | NotFoundException> {
     const user: User = req.user as User;
 
     const todo: Todo = await this.todoService.getById(id, user.id);

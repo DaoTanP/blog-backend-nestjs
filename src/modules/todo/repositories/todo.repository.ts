@@ -18,27 +18,27 @@ export class TodoRepository extends Repository<Todo> {
     super(Todo, dataSource.createEntityManager());
   }
 
-  async getByUserId(userId: number): Promise<Todo[]> {
+  getByUserId(userId: string): Promise<Todo[]> {
     return this.find({
       where: { user: { id: userId } },
     });
   }
 
-  async getById(id: number, userId: number): Promise<Todo> {
+  getById(id: string, userId: string): Promise<Todo> {
     return this.findOne({
       where: { id, user: { id: userId } },
     });
   }
 
-  async addTodo(todoDto: TodoDTO, user: User): Promise<Todo> {
+  addTodo(todoDto: TodoDTO, user: User): Promise<Todo> {
     const todo: Todo = this.create(todoDto);
     todo.user = user;
     return this.save(todo);
   }
 
   async updateTodo(
-    id: number,
-    userId: number,
+    id: string,
+    userId: string,
     todoDto: TodoDTO,
   ): Promise<Todo> {
     const todo: Todo = await this.getById(id, userId);
@@ -48,8 +48,8 @@ export class TodoRepository extends Repository<Todo> {
   }
 
   async markCompleted(
-    id: number,
-    userId: number,
+    id: string,
+    userId: string,
     completed: boolean = true,
   ): Promise<boolean> {
     const todo: Todo = await this.getById(id, userId);
@@ -62,7 +62,7 @@ export class TodoRepository extends Repository<Todo> {
     return true;
   }
 
-  async deleteById(id: number, userId: number): Promise<boolean> {
+  async deleteById(id: string, userId: string): Promise<boolean> {
     const deleteResult: DeleteResult = await this.delete({
       id,
       user: { id: userId },

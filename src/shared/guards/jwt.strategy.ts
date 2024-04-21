@@ -4,6 +4,7 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import 'dotenv/config';
 import { UserService } from '@modules/user/user.service';
 import { User } from '@modules/user/entities/user.entity';
+import { JwtPayload } from '@shared/constants/jwt-payload.interface';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -14,7 +15,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
   }
 
-  async validate(payload: any): Promise<User> {
-    return this.userService.getById(parseInt(payload.id));
+  validate(payload: JwtPayload): Promise<User> {
+    return this.userService.getById(payload.id);
   }
 }
