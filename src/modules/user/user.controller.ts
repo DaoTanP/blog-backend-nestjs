@@ -28,7 +28,7 @@ import { SignUpDTO } from '@modules/auth/dto/sign-up.dto';
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Get('/profile')
+  @Get('/myProfile')
   @UseGuards(JwtAuthGuard)
   myProfile(@Req() req: Request): Promise<User> {
     const loggedInUser: User = req.user as User;
@@ -48,8 +48,8 @@ export class UserController {
     });
   }
 
-  @Get('checkUsernameAvailability')
-  checkUsernameAvailability(
+  @Get('isUsernameAvailable')
+  isUsernameAvailable(
     @Query('username') username: string,
   ): Promise<boolean | BadRequestException> {
     if (!username)
@@ -65,8 +65,8 @@ export class UserController {
     return this.userService.isUsernameAvailable(username);
   }
 
-  @Get('checkEmailAvailability')
-  checkEmailAvailability(
+  @Get('isEmailAvailable')
+  isEmailAvailable(
     @Query('email') email: string,
   ): Promise<boolean | BadRequestException> {
     if (!email)
