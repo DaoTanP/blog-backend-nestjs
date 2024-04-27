@@ -13,7 +13,7 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '@shared/guards/jwt-auth.guard';
 import { UserService } from './user.service';
-import { isAlphanumeric, isEmail } from 'class-validator';
+import { isEmail, length, matches } from 'class-validator';
 import { User } from './entities/user.entity';
 import { Messages } from '@/shared/constants/messages.enum';
 import { RolesGuard } from '@shared/guards/roles.guard';
@@ -23,6 +23,7 @@ import { Request } from 'express';
 import { Owner } from '@/shared/decorators/owner.decorator';
 import { PermissionGuard } from '@/shared/guards/permission.guard';
 import { SignUpDTO } from '@modules/auth/dto/sign-up.dto';
+import { REGEX_PATTERN } from '@/shared/constants/regex-pattern.constant';
 
 @Controller('users')
 export class UserController {
@@ -57,9 +58,14 @@ export class UserController {
         message: Messages.USERNAME_EMPTY,
       });
 
-    if (!isAlphanumeric(username))
+    if (!matches(username, REGEX_PATTERN.username))
       throw new BadRequestException({
-        message: Messages.USERNAME_INVALID,
+        message: Messages.USERNAME_PATTERN,
+      });
+
+    if (!length(username, 3, 30))
+      throw new BadRequestException({
+        message: Messages.USERNAME_LENGTH,
       });
 
     return this.userService.isUsernameAvailable(username);

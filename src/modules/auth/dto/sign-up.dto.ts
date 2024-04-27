@@ -1,4 +1,5 @@
-import { Regex } from '@/shared/constants/regex.constant';
+import { Messages } from '@/shared/constants/messages.enum';
+import { REGEX_PATTERN } from '@/shared/constants/regex-pattern.constant';
 import {
   IsEmail,
   IsNotEmpty,
@@ -8,12 +9,12 @@ import {
 } from 'class-validator';
 export class SignUpDTO {
   @IsString({ message: 'username must be of type string' })
-  @IsNotEmpty({ message: 'username must not be empty' })
+  @IsNotEmpty({ message: Messages.USERNAME_EMPTY })
   @Length(3, 30, {
-    message: 'username must contain from 3 to 30 characters',
+    message: Messages.USERNAME_LENGTH,
   })
-  @Matches(Regex.username, {
-    message: 'username can only contain letters, numbers, "-", and "_"',
+  @Matches(REGEX_PATTERN.username, {
+    message: Messages.USERNAME_PATTERN,
   })
   username: string;
 
