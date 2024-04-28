@@ -5,7 +5,6 @@ import {
   Get,
   Param,
   Post,
-  Query,
   Req,
   UseGuards,
   NotFoundException,
@@ -36,22 +35,9 @@ export class UserController {
     return this.userService.getByUsername(loggedInUser.username);
   }
 
-  @Get(':username')
-  async profile(
-    @Param('username') username: string,
-  ): Promise<User | NotFoundException> {
-    const user: User = await this.userService.getByUsername(username);
-
-    if (user) return user;
-
-    throw new NotFoundException({
-      message: Messages.USER_NOT_FOUND,
-    });
-  }
-
-  @Get('isUsernameAvailable')
+  @Post('isUsernameAvailable')
   isUsernameAvailable(
-    @Query('username') username: string,
+    @Body('username') username: string,
   ): Promise<boolean | BadRequestException> {
     if (!username)
       throw new BadRequestException({
@@ -71,9 +57,9 @@ export class UserController {
     return this.userService.isUsernameAvailable(username);
   }
 
-  @Get('isEmailAvailable')
+  @Post('isEmailAvailable')
   isEmailAvailable(
-    @Query('email') email: string,
+    @Body('email') email: string,
   ): Promise<boolean | BadRequestException> {
     if (!email)
       throw new BadRequestException({
@@ -86,6 +72,19 @@ export class UserController {
       });
 
     return this.userService.isEmailAvailable(email);
+  }
+
+  @Get(':username')
+  async profile(
+    @Param('username') username: string,
+  ): Promise<User | NotFoundException> {
+    const user: User = await this.userService.getByUsername(username);
+
+    if (user) return user;
+
+    throw new NotFoundException({
+      message: Messages.USER_NOT_FOUND,
+    });
   }
 
   @Post()

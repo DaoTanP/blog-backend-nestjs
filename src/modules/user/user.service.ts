@@ -32,15 +32,15 @@ export class UserService {
   }
 
   async isUsernameAvailable(username: string): Promise<boolean> {
-    const user: User = await this.userRepository.getByUsername(username);
+    const user: User = await this.userRepository.getAccountByUsername(username);
 
-    return user !== null;
+    return user === null;
   }
 
   async isEmailAvailable(email: string): Promise<boolean> {
-    const user: User = await this.userRepository.getByEmail(email);
+    const user: User = await this.userRepository.getAccountByEmail(email);
 
-    return user !== null;
+    return user === null;
   }
 
   deleteById(id: string): Promise<boolean> {

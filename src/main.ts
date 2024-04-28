@@ -1,4 +1,5 @@
 import { NestFactory } from '@nestjs/core';
+import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { OpenAPIObject, SwaggerModule } from '@nestjs/swagger';
@@ -13,6 +14,8 @@ async function bootstrap(): Promise<void> {
   app.useGlobalPipes(new ValidationPipe());
   app.useGlobalFilters(new AllExceptionFilter());
   app.useGlobalFilters(new HttpExceptionFilter());
+  app.enableCors({ credentials: true, origin: process.env.REQUEST_DOMAIN });
+  app.use(cookieParser(process.env.APP_SECRET));
 
   const swaggerDocument: OpenAPIObject = SwaggerModule.createDocument(
     app,

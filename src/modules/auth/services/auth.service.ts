@@ -34,7 +34,13 @@ export class AuthService {
     return this.userService.getById(account.id);
   }
 
-  generateToken(user: User): { access_token: string } {
+  // sign a token without info in the payload if user param is null or undefined
+  generateToken(user: User = null): { access_token: string } {
+    if (!user)
+      return {
+        access_token: this.jwtService.sign({}),
+      };
+
     const payload: JwtPayload = {
       id: user.id,
       username: user.username,

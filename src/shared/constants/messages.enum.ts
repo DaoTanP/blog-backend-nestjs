@@ -2,7 +2,7 @@
 export enum Messages {
   USER_NOT_FOUND = 'user not found',
   USERNAME_EMPTY = 'username must not be empty',
-  USERNAME_PATTERN = 'username can only contain letters, numbers, "-", and "_"',
+  USERNAME_PATTERN = 'username can only contain letters, numbers, "-", "." and "_"',
   USERNAME_EXIST = 'username already exists',
   USERNAME_LENGTH = 'username must contain from 3 to 30 characters',
   EMAIL_EMPTY = 'email must not be empty',
