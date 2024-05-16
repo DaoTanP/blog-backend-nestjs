@@ -19,7 +19,7 @@ export class Post extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column('varchar', { nullable: false, length: 255 })
+  @Column('nvarchar', { nullable: false, length: 300 })
   title: string;
 
   @Column('text', { nullable: false })

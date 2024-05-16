@@ -7,15 +7,18 @@ import { UserService } from '@modules/user/user.service';
 import { User } from '@modules/user/entities/user.entity';
 import { SignUpDTO } from '@modules/auth/dto/sign-up.dto';
 import { Role } from '@modules/auth/entities/role.entity';
-import { Messages } from '@/shared/constants/messages.enum';
 import { RoleEnum } from '@/shared/constants/role.enum';
 import { JwtPayload } from '@/shared/constants/jwt-payload.interface';
+import { TokenDTO } from '@modules/auth/dto/token.dto';
+import { RefreshTokenRepository } from '@modules/auth/repositories/refresh-token.repository';
+import { RefreshToken } from '@modules/auth/entities/refresh-token.entity';
 
 @Injectable()
 export class AuthService {
   constructor(
     private readonly userService: UserService,
     private readonly jwtService: JwtService,
+    private readonly refreshTokenRepository: RefreshTokenRepository,
   ) {}
 
   async validateUser(signInDTO: SignInDTO): Promise<User | null> {
@@ -34,11 +37,11 @@ export class AuthService {
     return this.userService.getById(account.id);
   }
 
-  // sign a token without info in the payload if user param is null or undefined
-  generateToken(user: User = null): { access_token: string } {
+  generateToken(user: User = null): TokenDTO {
     if (!user)
       return {
-        access_token: this.jwtService.sign({}),
+        accessToken: this.jwtService.sign({}),
+        refreshToken: this.jwtService.sign({}, { expiresIn: '7d' }),
       };
 
     const payload: JwtPayload = {
@@ -48,26 +51,38 @@ export class AuthService {
     };
 
     return {
-      access_token: this.jwtService.sign(payload),
+      accessToken: this.jwtService.sign(payload),
+      refreshToken: this.jwtService.sign(
+        { username: user.username },
+        { expiresIn: '7d' },
+      ),
     };
   }
 
-  async signUp(signUpDTO: SignUpDTO): Promise<User | Error> {
-    const usernameExists: boolean = await this.userService.isUsernameAvailable(
-      signUpDTO.username,
-    );
-    if (usernameExists) {
-      throw new Error(Messages.USERNAME_EXIST);
-    }
+  async getRefreshToken(user: User): Promise<string> {
+    const refreshToken: RefreshToken =
+      await this.refreshTokenRepository.getByUserId(user.id);
 
-    const emailExists: boolean = await this.userService.isEmailAvailable(
-      signUpDTO.email,
-    );
-    if (emailExists) {
-      throw new Error(Messages.EMAIL_EXIST);
-    }
+    return refreshToken.token;
+  }
 
-    return this.userService.addUser(signUpDTO);
+  validateRefreshToken(token: string): Promise<RefreshToken> {
+    return this.refreshTokenRepository.getByToken(token);
+  }
+
+  async updateRefreshToken(token: string, user: User): Promise<string> {
+    const refreshToken: RefreshToken =
+      await this.refreshTokenRepository.updateToken(token, user);
+
+    return refreshToken.token;
+  }
+
+  async signUp(signUpDTO: SignUpDTO): Promise<TokenDTO> {
+    const user: User = await this.userService.addUser(signUpDTO);
+    const token: TokenDTO = this.generateToken(user);
+    await this.refreshTokenRepository.addToken(token.refreshToken, user);
+
+    return token;
   }
 
   hasPermission(

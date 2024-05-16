@@ -7,7 +7,8 @@ export const jwtConfig: JwtModuleAsyncOptions = {
       secret: process.env.APP_SECRET,
       signOptions: {
         expiresIn:
-          (parseInt(process.env.TOKEN_MAX_AGE_MILLIS, 10) || 3600000) / 1000, // 1hr
+          (parseInt(process.env.ACCESS_TOKEN_MAX_AGE_MILLIS, 10) || 3600000) /
+          1000, // 1hr
       },
     };
   },

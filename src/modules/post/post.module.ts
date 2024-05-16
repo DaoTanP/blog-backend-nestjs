@@ -10,6 +10,8 @@ import { JwtService } from '@nestjs/jwt';
 import { AuthService } from '@modules/auth/services/auth.service';
 import { UserService } from '@modules/user/user.service';
 import { UserRepository } from '@modules/user/repositories/user.repository';
+import { RefreshTokenRepository } from '@modules/auth/repositories/refresh-token.repository';
+import { TagRepository } from './repositories/tag.repository';
 
 @Module({
   imports: [CommentModule, TypeOrmModule.forFeature([Post, Tag])],
@@ -21,6 +23,8 @@ import { UserRepository } from '@modules/user/repositories/user.repository';
     UserRepository,
     AuthService,
     JwtService,
+    RefreshTokenRepository,
+    TagRepository,
   ],
 })
 export class PostModule {}

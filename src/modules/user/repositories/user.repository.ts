@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { User } from '@modules/user/entities/user.entity';
 import { SignUpDTO } from '@/modules/auth/dto/sign-up.dto';
+import { UpdateUserDTO } from '@modules/user/dto/update-user.dto';
 
 @Injectable()
 export class UserRepository extends Repository<User> {
@@ -65,17 +66,16 @@ export class UserRepository extends Repository<User> {
     const user: User = this.create(signUpDto);
     const newUser: User = await this.save(user);
 
-    return newUser;
+    return this.getById(newUser.id);
   }
 
-  // async updateById(id: string, userDto: UserDTO): Promise<boolean> {
-  //   const user: User = await this.getById(id);
-  //   const userToUpdate: User = Object.assign(user, userDto);
-  //   const updatedUser: User = await this.save(userToUpdate);
-  //   if (!updatedUser) return false;
+  async updateById(id: string, updateUserDTO: UpdateUserDTO): Promise<User> {
+    const user: User = await this.getById(id);
+    const userToUpdate: User = Object.assign(user, updateUserDTO);
+    const updatedUser: User = await this.save(userToUpdate);
 
-  //   return true;
-  // }
+    return this.getByUsername(updatedUser.username);
+  }
 
   // #endregion
 

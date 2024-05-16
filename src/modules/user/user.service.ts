@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { UserRepository } from './repositories/user.repository';
 import { User } from './entities/user.entity';
 import { SignUpDTO } from '@modules/auth/dto/sign-up.dto';
+import { UpdateUserDTO } from './dto/update-user.dto';
 
 @Injectable()
 export class UserService {
@@ -47,9 +48,9 @@ export class UserService {
     return this.userRepository.deleteById(id);
   }
 
-  // updateById(id: string, userDto: UserDTO): Promise<boolean> {
-  //   return this.userRepository.updateById(id, userDto);
-  // }
+  updateById(id: string, updateUserDTO: UpdateUserDTO): Promise<User> {
+    return this.userRepository.updateById(id, updateUserDTO);
+  }
 
   addUser(signUpDTO: SignUpDTO): Promise<User> {
     return this.userRepository.addUser(signUpDTO);

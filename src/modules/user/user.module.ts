@@ -11,6 +11,7 @@ import { JwtService } from '@nestjs/jwt';
 import { AuthService } from '@modules/auth/services/auth.service';
 import { CommentService } from '@modules/comment/comment.service';
 import { CommentRepository } from '@modules/comment/repositories/comment.repository';
+import { RefreshTokenRepository } from '@modules/auth/repositories/refresh-token.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User])],
@@ -25,6 +26,7 @@ import { CommentRepository } from '@modules/comment/repositories/comment.reposit
     AuthService,
     CommentService,
     CommentRepository,
+    RefreshTokenRepository,
   ],
 })
 export class UserModule {}

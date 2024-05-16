@@ -9,6 +9,7 @@ import {
   UseGuards,
   NotFoundException,
   BadRequestException,
+  Put,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '@shared/guards/jwt-auth.guard';
 import { UserService } from './user.service';
@@ -23,12 +24,13 @@ import { Owner } from '@/shared/decorators/owner.decorator';
 import { PermissionGuard } from '@/shared/guards/permission.guard';
 import { SignUpDTO } from '@modules/auth/dto/sign-up.dto';
 import { REGEX_PATTERN } from '@/shared/constants/regex-pattern.constant';
+import { UpdateUserDTO } from './dto/update-user.dto';
 
 @Controller('users')
 export class UserController {
   constructor(private readonly userService: UserService) {}
 
-  @Get('/myProfile')
+  @Get('profile')
   @UseGuards(JwtAuthGuard)
   myProfile(@Req() req: Request): Promise<User> {
     const loggedInUser: User = req.user as User;
@@ -74,7 +76,7 @@ export class UserController {
     return this.userService.isEmailAvailable(email);
   }
 
-  @Get(':username')
+  @Get('profile/:username')
   async profile(
     @Param('username') username: string,
   ): Promise<User | NotFoundException> {
@@ -115,6 +117,18 @@ export class UserController {
 
   //   return this.userService.updateById(userToUpdate.id, formData);
   // }
+
+  @Put('profile')
+  @UseGuards(JwtAuthGuard)
+  updateProfile(
+    @Req() req: Request,
+    @Body() formData: UpdateUserDTO,
+  ): Promise<User | NotFoundException> {
+    const userToUpdate: User = req.user as User;
+    if (!userToUpdate) throw new NotFoundException(Messages.USER_NOT_FOUND);
+
+    return this.userService.updateById(userToUpdate.id, formData);
+  }
 
   @Delete(':username')
   @UseGuards(JwtAuthGuard, PermissionGuard)
