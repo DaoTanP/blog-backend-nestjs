@@ -12,6 +12,7 @@ import { AuthService } from '@modules/auth/services/auth.service';
 import { CommentService } from '@modules/comment/comment.service';
 import { CommentRepository } from '@modules/comment/repositories/comment.repository';
 import { RefreshTokenRepository } from '@modules/auth/repositories/refresh-token.repository';
+import { TagRepository } from '@modules/post/repositories/tag.repository';
 
 @Module({
   imports: [TypeOrmModule.forFeature([User])],
@@ -27,6 +28,7 @@ import { RefreshTokenRepository } from '@modules/auth/repositories/refresh-token
     CommentService,
     CommentRepository,
     RefreshTokenRepository,
+    TagRepository,
   ],
 })
 export class UserModule {}

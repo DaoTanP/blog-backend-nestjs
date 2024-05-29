@@ -38,9 +38,7 @@ export class UserController {
   }
 
   @Post('isUsernameAvailable')
-  isUsernameAvailable(
-    @Body('username') username: string,
-  ): Promise<boolean | BadRequestException> {
+  isUsernameAvailable(@Body('username') username: string): Promise<boolean> {
     if (!username)
       throw new BadRequestException({
         message: Messages.USERNAME_EMPTY,
@@ -60,9 +58,7 @@ export class UserController {
   }
 
   @Post('isEmailAvailable')
-  isEmailAvailable(
-    @Body('email') email: string,
-  ): Promise<boolean | BadRequestException> {
+  isEmailAvailable(@Body('email') email: string): Promise<boolean> {
     if (!email)
       throw new BadRequestException({
         message: Messages.EMAIL_EMPTY,
@@ -77,9 +73,7 @@ export class UserController {
   }
 
   @Get('profile/:username')
-  async profile(
-    @Param('username') username: string,
-  ): Promise<User | NotFoundException> {
+  async profile(@Param('username') username: string): Promise<User> {
     const user: User = await this.userService.getByUsername(username);
 
     if (user) return user;
@@ -92,9 +86,7 @@ export class UserController {
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(RoleEnum.ADMIN)
-  async addUser(
-    @Body() formData: SignUpDTO,
-  ): Promise<User | BadRequestException> {
+  async addUser(@Body() formData: SignUpDTO): Promise<User> {
     if (await this.userService.getAccountByUsername(formData.username))
       throw new BadRequestException(Messages.USERNAME_EXIST);
 
@@ -123,7 +115,7 @@ export class UserController {
   updateProfile(
     @Req() req: Request,
     @Body() formData: UpdateUserDTO,
-  ): Promise<User | NotFoundException> {
+  ): Promise<User> {
     const userToUpdate: User = req.user as User;
     if (!userToUpdate) throw new NotFoundException(Messages.USER_NOT_FOUND);
 

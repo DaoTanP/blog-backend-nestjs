@@ -14,7 +14,7 @@ import {
 import { PostService } from './post.service';
 import { Post as PostEntity } from './entities/post.entity';
 import { Messages } from '@/shared/constants/messages.enum';
-import { PostDTO } from './dto/post.dto';
+import { CreatePostDTO } from './dto/create-post.dto';
 import { JwtAuthGuard } from '@shared/guards/jwt-auth.guard';
 import { User } from '@modules/user/entities/user.entity';
 import { Request } from 'express';
@@ -22,6 +22,7 @@ import { UserService } from '@modules/user/user.service';
 import { PermissionGuard } from '@/shared/guards/permission.guard';
 import { Owner } from '@/shared/decorators/owner.decorator';
 import { Tag } from './entities/tag.entity';
+import { PostDTO } from './dto/post.dto';
 
 @Controller('posts')
 export class PostController {
@@ -31,8 +32,17 @@ export class PostController {
   ) {}
 
   @Get()
-  getAllPost(): Promise<PostEntity[]> {
-    return this.postService.getAll();
+  getAllPosts(): Promise<PostDTO[]> {
+    return this.postService.getAll().then((posts: PostEntity[]) =>
+      posts.map((post: PostEntity) => {
+        return {
+          ...post,
+          tags: post.tags.map((tag: Tag) => {
+            return tag.name;
+          }),
+        };
+      }),
+    );
   }
 
   @Get('tags')
@@ -46,10 +56,16 @@ export class PostController {
   }
 
   @Get(':id')
-  async getPostById(@Param('id') id: string): Promise<PostEntity> {
+  async getPostById(@Param('id') id: string): Promise<PostDTO> {
     const post: PostEntity = await this.postService.getById(id);
 
-    if (post) return post;
+    if (post)
+      return {
+        ...post,
+        tags: post.tags.map((tag: Tag) => {
+          return tag.name;
+        }),
+      };
 
     throw new NotFoundException({
       message: Messages.POST_NOT_FOUND,
@@ -58,7 +74,10 @@ export class PostController {
 
   @Post()
   @UseGuards(JwtAuthGuard)
-  addPost(@Req() req: Request, @Body() formData: PostDTO): Promise<PostEntity> {
+  addPost(
+    @Req() req: Request,
+    @Body() formData: CreatePostDTO,
+  ): Promise<PostEntity> {
     return this.postService.addPost(formData, req.user as User);
   }
 
@@ -68,7 +87,7 @@ export class PostController {
   async updatePost(
     @Req() req: Request,
     @Param('id') id: string,
-    @Body() formData: PostDTO,
+    @Body() formData: CreatePostDTO,
   ): Promise<PostEntity> {
     const postToUpdate: PostEntity = await this.postService.getById(id);
     if (!postToUpdate) throw new NotFoundException(Messages.POST_NOT_FOUND);

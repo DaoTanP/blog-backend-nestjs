@@ -12,7 +12,7 @@ import { UpdateUserDTO } from '@modules/user/dto/update-user.dto';
 @Injectable()
 export class UserRepository extends Repository<User> {
   private findOptionRelations: FindOptionsRelations<User> = {
-    posts: true,
+    posts: { tags: true, user: true },
   };
 
   constructor(private dataSource: DataSource) {

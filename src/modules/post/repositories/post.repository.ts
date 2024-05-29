@@ -6,7 +6,7 @@ import {
   Repository,
 } from 'typeorm';
 import { Post } from '@modules/post/entities/post.entity';
-import { PostDTO } from '@modules/post/dto/post.dto';
+import { CreatePostDTO } from '@modules/post/dto/create-post.dto';
 import { User } from '@modules/user/entities/user.entity';
 import { TagRepository } from './tag.repository';
 import { Tag } from '@modules/post/entities/tag.entity';
@@ -43,7 +43,7 @@ export class PostRepository extends Repository<Post> {
     });
   }
 
-  async addPost(postDto: PostDTO, user: User): Promise<Post> {
+  async addPost(postDto: CreatePostDTO, user: User): Promise<Post> {
     const post: Post = this.create({
       title: postDto.title,
       body: postDto.body,
@@ -64,7 +64,7 @@ export class PostRepository extends Repository<Post> {
     return this.save(post);
   }
 
-  async updateById(id: string, postDto: PostDTO): Promise<Post> {
+  async updateById(id: string, postDto: CreatePostDTO): Promise<Post> {
     const post: Post = await this.getById(id);
     const postToUpdate: Post = Object.assign(post, postDto);
 

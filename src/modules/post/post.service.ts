@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { PostRepository } from './repositories/post.repository';
 import { Post } from './entities/post.entity';
-import { PostDTO } from './dto/post.dto';
+import { CreatePostDTO } from './dto/create-post.dto';
 import { User } from '@modules/user/entities/user.entity';
 import { Tag } from './entities/tag.entity';
 import { TagRepository } from './repositories/tag.repository';
@@ -25,11 +25,11 @@ export class PostService {
     return this.postRepository.getAllByTag(tagName);
   }
 
-  addPost(postDto: PostDTO, user: User): Promise<Post> {
+  addPost(postDto: CreatePostDTO, user: User): Promise<Post> {
     return this.postRepository.addPost(postDto, user);
   }
 
-  updateById(id: string, postDto: PostDTO): Promise<Post> {
+  updateById(id: string, postDto: CreatePostDTO): Promise<Post> {
     return this.postRepository.updateById(id, postDto);
   }
 

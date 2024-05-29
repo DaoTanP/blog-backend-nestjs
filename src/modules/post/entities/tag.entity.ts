@@ -15,7 +15,7 @@ export class Tag extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column('varchar', { nullable: false, length: 255 })
+  @Column('varchar', { nullable: false, length: 30 })
   name: string;
 
   @CreateDateColumn({ name: 'created_at', select: false })
