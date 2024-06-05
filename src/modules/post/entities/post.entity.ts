@@ -10,9 +10,11 @@ import {
   UpdateDateColumn,
   JoinTable,
   ManyToMany,
+  OneToMany,
 } from 'typeorm';
 import { User } from '@modules/user/entities/user.entity';
 import { Tag } from './tag.entity';
+import { Comment } from '@/modules/comment/entities/comment.entity';
 
 @Entity('posts')
 export class Post extends BaseEntity {
@@ -48,4 +50,7 @@ export class Post extends BaseEntity {
     inverseJoinColumn: { name: 'tag_id' },
   })
   tags: Tag[];
+
+  @OneToMany(() => Comment, (comment: Comment) => comment.post)
+  comments: Comment[];
 }

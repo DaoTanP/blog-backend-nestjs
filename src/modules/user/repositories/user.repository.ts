@@ -12,7 +12,8 @@ import { UpdateUserDTO } from '@modules/user/dto/update-user.dto';
 @Injectable()
 export class UserRepository extends Repository<User> {
   private findOptionRelations: FindOptionsRelations<User> = {
-    posts: { tags: true, user: true },
+    posts: { tags: true },
+    followers: true,
   };
 
   constructor(private dataSource: DataSource) {
@@ -59,6 +60,57 @@ export class UserRepository extends Repository<User> {
       where: { email },
       select: { id: true, email: true, password: true },
     });
+  }
+
+  getFollowers(id: string): Promise<User[]> {
+    return this.find({
+      where: { id },
+    });
+  }
+
+  getFollowing(id: string): Promise<User[]> {
+    return this.find({
+      where: { followers: { id } },
+    });
+  }
+
+  async followUser(followerId: string, userId: string): Promise<boolean> {
+    const follower: User = await this.getById(followerId);
+    if (!follower) return false;
+
+    const user: User = await this.findOne({
+      where: { id: userId },
+      relations: this.findOptionRelations,
+    });
+    if (!user) return false;
+
+    user.followers.push(follower);
+    const result: User = await this.save(user);
+
+    if (result.followers.indexOf(follower) === -1) return false;
+    return true;
+  }
+
+  async unfollowUser(followerId: string, userId: string): Promise<boolean> {
+    const follower: User = await this.getById(followerId);
+    if (!follower) return false;
+
+    const user: User = await this.findOne({
+      where: { id: userId },
+      relations: this.findOptionRelations,
+    });
+    if (!user) return false;
+
+    const followerIndex: number = user.followers.findIndex(
+      (f: User) => f.id === followerId,
+    );
+    if (followerIndex === -1) return false;
+
+    user.followers.splice(followerIndex, 1);
+    const result: User = await this.save(user);
+
+    if (result.followers.indexOf(follower) !== -1) return false;
+    return true;
   }
 
   // #region TODO: consider remove user-role table

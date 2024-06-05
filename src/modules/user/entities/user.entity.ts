@@ -64,6 +64,14 @@ export class User extends BaseEntity {
   })
   roles: Role[];
 
+  @ManyToMany(() => User)
+  @JoinTable({
+    name: 'user_follower',
+    joinColumn: { name: 'user_id' },
+    inverseJoinColumn: { name: 'follower_id' },
+  })
+  followers: User[];
+
   @BeforeInsert()
   @BeforeUpdate()
   async hashPassword(password: string): Promise<void> {

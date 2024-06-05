@@ -31,7 +31,7 @@ export class CommentController {
   ) {}
 
   @Get()
-  async getAllComment(
+  async getAllComments(
     @Param('postId') postId: string,
   ): Promise<Comment[] | unknown> {
     const post: PostEntity = await this.postService.getById(postId);

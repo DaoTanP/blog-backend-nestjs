@@ -36,7 +36,10 @@ export class Comment extends BaseEntity {
   })
   user: User;
 
-  @ManyToOne(() => Post)
+  @ManyToOne(() => Post, (post: Post) => post.comments, {
+    onDelete: 'CASCADE',
+    onUpdate: 'CASCADE',
+  })
   @JoinColumn({
     name: 'post_id',
     foreignKeyConstraintName: 'fk_comment_post',

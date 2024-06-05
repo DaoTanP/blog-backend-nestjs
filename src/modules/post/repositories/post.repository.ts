@@ -3,6 +3,7 @@ import {
   DataSource,
   DeleteResult,
   FindOptionsRelations,
+  ILike,
   Repository,
 } from 'typeorm';
 import { Post } from '@modules/post/entities/post.entity';
@@ -16,6 +17,7 @@ export class PostRepository extends Repository<Post> {
   private findOptionRelations: FindOptionsRelations<Post> = {
     user: true,
     tags: true,
+    comments: true,
   };
 
   constructor(
@@ -25,8 +27,8 @@ export class PostRepository extends Repository<Post> {
     super(Post, dataSource.createEntityManager());
   }
 
-  getAll(): Promise<Post[]> {
-    return this.find({ relations: this.findOptionRelations });
+  getAll(skip: number, take: number): Promise<Post[]> {
+    return this.find({ relations: this.findOptionRelations, skip, take });
   }
 
   getById(id: string): Promise<Post> {
@@ -40,6 +42,33 @@ export class PostRepository extends Repository<Post> {
     return this.find({
       where: { tags: { name: tagName } },
       relations: this.findOptionRelations,
+    });
+  }
+
+  getAllByUsername(
+    username: string,
+    skip: number,
+    take: number,
+  ): Promise<Post[]> {
+    return this.find({
+      where: { user: { username } },
+      relations: this.findOptionRelations,
+      skip,
+      take,
+    });
+  }
+
+  searchPost(query: string, skip: number, take: number): Promise<Post[]> {
+    return this.find({
+      where: [
+        { title: ILike(`%${query}%`) },
+        { body: ILike(`%${query}%`) },
+        { tags: { name: ILike(`%${query}%`) } },
+        { user: { username: ILike(`%${query}%`) } },
+      ],
+      relations: this.findOptionRelations,
+      skip,
+      take,
     });
   }
 

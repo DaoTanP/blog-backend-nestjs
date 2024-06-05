@@ -22,7 +22,6 @@ import { UserService } from '@modules/user/user.service';
 import { PermissionGuard } from '@/shared/guards/permission.guard';
 import { Owner } from '@/shared/decorators/owner.decorator';
 import { Tag } from './entities/tag.entity';
-import { PostDTO } from './dto/post.dto';
 
 @Controller('posts')
 export class PostController {
@@ -32,40 +31,63 @@ export class PostController {
   ) {}
 
   @Get()
-  getAllPosts(): Promise<PostDTO[]> {
-    return this.postService.getAll().then((posts: PostEntity[]) =>
-      posts.map((post: PostEntity) => {
-        return {
-          ...post,
-          tags: post.tags.map((tag: Tag) => {
-            return tag.name;
-          }),
-        };
-      }),
-    );
+  getAllPosts(
+    @Query('skip') skip: number = 0,
+    @Query('take') take: number = 10,
+  ): Promise<PostEntity[]> {
+    return this.postService.getAll(skip, take);
+    //   .then((posts: PostEntity[]) =>
+    //   posts.map((post: PostEntity) => {
+    //     return {
+    //       ...post,
+    //       tags: post.tags.map((tag: Tag) => {
+    //         return tag.name;
+    //       }),
+    //     };
+    //   }),
+    // );
   }
 
-  @Get('tags')
-  getAllTags(): Promise<Tag[]> {
-    return this.postService.getAllTags();
+  @Get('search')
+  searchPost(
+    @Query('query') query: string,
+    @Query('skip') skip: number = 0,
+    @Query('take') take: number = 10,
+  ): Promise<PostEntity[]> {
+    return this.postService.searchPost(query, skip, take);
   }
 
-  @Get('tags/filter')
-  findTag(@Query('name') name: string): Promise<Tag[]> {
-    return this.postService.findTag(name);
+  @Get('/user/:username')
+  getAllPostsByUsername(
+    @Param('username') username: string,
+    @Query('skip') skip: number = 0,
+    @Query('take') take: number = 10,
+  ): Promise<PostEntity[]> {
+    return this.postService.getAllByUsername(username, skip, take);
+    //   .then((posts: PostEntity[]) =>
+    //   posts.map((post: PostEntity) => {
+    //     return {
+    //       ...post,
+    //       tags: post.tags.map((tag: Tag) => {
+    //         return tag.name;
+    //       }),
+    //     };
+    //   }),
+    // );
   }
 
   @Get(':id')
-  async getPostById(@Param('id') id: string): Promise<PostDTO> {
+  async getPostById(@Param('id') id: string): Promise<PostEntity> {
     const post: PostEntity = await this.postService.getById(id);
 
     if (post)
-      return {
-        ...post,
-        tags: post.tags.map((tag: Tag) => {
-          return tag.name;
-        }),
-      };
+      // return {
+      //   ...post,
+      //   tags: post.tags.map((tag: Tag) => {
+      //     return tag.name;
+      //   }),
+      // };
+      return post;
 
     throw new NotFoundException({
       message: Messages.POST_NOT_FOUND,
@@ -106,5 +128,15 @@ export class PostController {
     if (!postToDelete) throw new NotFoundException(Messages.POST_NOT_FOUND);
 
     return this.postService.deleteById(id);
+  }
+
+  @Get('tags')
+  getAllTags(): Promise<Tag[]> {
+    return this.postService.getAllTags();
+  }
+
+  @Get('tags/filter')
+  findTag(@Query('name') name: string): Promise<Tag[]> {
+    return this.postService.findTag(name);
   }
 }

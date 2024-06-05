@@ -12,6 +12,10 @@ export class CommentService {
     return this.commentRepository.getByPostId(postId);
   }
 
+  getByUsername(username: string): Promise<Comment[]> {
+    return this.commentRepository.getByUsername(username);
+  }
+
   getById(id: string, postId: string): Promise<Comment> {
     return this.commentRepository.getById(id, postId);
   }

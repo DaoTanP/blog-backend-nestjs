@@ -13,8 +13,8 @@ export class PostService {
     private readonly tagRepository: TagRepository,
   ) {}
 
-  getAll(): Promise<Post[]> {
-    return this.postRepository.getAll();
+  getAll(skip: number, take: number): Promise<Post[]> {
+    return this.postRepository.getAll(skip, take);
   }
 
   getById(id: string): Promise<Post> {
@@ -23,6 +23,18 @@ export class PostService {
 
   getAllByTag(tagName: string): Promise<Post[]> {
     return this.postRepository.getAllByTag(tagName);
+  }
+
+  getAllByUsername(
+    username: string,
+    skip: number,
+    take: number,
+  ): Promise<Post[]> {
+    return this.postRepository.getAllByUsername(username, skip, take);
+  }
+
+  searchPost(query: string, skip: number, take: number): Promise<Post[]> {
+    return this.postRepository.searchPost(query, skip, take);
   }
 
   addPost(postDto: CreatePostDTO, user: User): Promise<Post> {

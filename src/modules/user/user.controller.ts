@@ -25,16 +25,25 @@ import { PermissionGuard } from '@/shared/guards/permission.guard';
 import { SignUpDTO } from '@modules/auth/dto/sign-up.dto';
 import { REGEX_PATTERN } from '@/shared/constants/regex-pattern.constant';
 import { UpdateUserDTO } from './dto/update-user.dto';
+import { UserDTO, mapValue } from './dto/user.dto';
+import { Comment } from '@modules/comment/entities/comment.entity';
+import { CommentService } from '@modules/comment/comment.service';
 
 @Controller('users')
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(
+    private readonly userService: UserService,
+    private readonly commentService: CommentService,
+  ) {}
 
   @Get('profile')
   @UseGuards(JwtAuthGuard)
-  myProfile(@Req() req: Request): Promise<User> {
+  myProfile(@Req() req: Request): Promise<UserDTO> {
     const loggedInUser: User = req.user as User;
-    return this.userService.getByUsername(loggedInUser.username);
+    return mapValue(
+      this.userService.getByUsername(loggedInUser.username),
+      this.userService,
+    );
   }
 
   @Post('isUsernameAvailable')
@@ -73,14 +82,19 @@ export class UserController {
   }
 
   @Get('profile/:username')
-  async profile(@Param('username') username: string): Promise<User> {
+  async profile(@Param('username') username: string): Promise<UserDTO> {
     const user: User = await this.userService.getByUsername(username);
 
-    if (user) return user;
+    if (user) return mapValue(user, this.userService);
 
     throw new NotFoundException({
       message: Messages.USER_NOT_FOUND,
     });
+  }
+
+  @Get('comments/:username')
+  getAllComments(@Param('username') username: string): Promise<Comment[]> {
+    return this.commentService.getByUsername(username);
   }
 
   @Post()
@@ -120,6 +134,32 @@ export class UserController {
     if (!userToUpdate) throw new NotFoundException(Messages.USER_NOT_FOUND);
 
     return this.userService.updateById(userToUpdate.id, formData);
+  }
+
+  @Post('follow')
+  @UseGuards(JwtAuthGuard)
+  async followUser(
+    @Req() req: Request,
+    @Body('userId') userId: string,
+  ): Promise<boolean> {
+    const follower: User = req.user as User;
+    const userToFollow: User = await this.userService.getById(userId);
+    if (!userToFollow) throw new NotFoundException(Messages.USER_NOT_FOUND);
+
+    return this.userService.followUser(follower.id, userToFollow.id);
+  }
+
+  @Post('unfollow')
+  @UseGuards(JwtAuthGuard)
+  async unfollowUser(
+    @Req() req: Request,
+    @Body('userId') userId: string,
+  ): Promise<boolean> {
+    const follower: User = req.user as User;
+    const userToUnfollow: User = await this.userService.getById(userId);
+    if (!userToUnfollow) throw new NotFoundException(Messages.USER_NOT_FOUND);
+
+    return this.userService.unfollowUser(follower.id, userToUnfollow.id);
   }
 
   @Delete(':username')

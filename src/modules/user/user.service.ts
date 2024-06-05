@@ -65,4 +65,20 @@ export class UserService {
     const user: User = await this.getByUsername(username);
     return user;
   }
+
+  getFollowers(id: string): Promise<User[]> {
+    return this.userRepository.getFollowers(id);
+  }
+
+  getFollowing(id: string): Promise<User[]> {
+    return this.userRepository.getFollowing(id);
+  }
+
+  followUser(followerId: string, userId: string): Promise<boolean> {
+    return this.userRepository.followUser(followerId, userId);
+  }
+
+  unfollowUser(followerId: string, userId: string): Promise<boolean> {
+    return this.userRepository.unfollowUser(followerId, userId);
+  }
 }

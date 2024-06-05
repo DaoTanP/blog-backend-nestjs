@@ -14,10 +14,12 @@ import { Post } from '@modules/post/entities/post.entity';
 export class CommentRepository extends Repository<Comment> {
   private findOptionRelations: FindOptionsRelations<Comment> = {
     user: true,
+    post: true,
   };
 
   private findOptionsSelect: FindOptionsSelect<Comment> = {
-    user: { username: true },
+    user: { username: true, displayName: true },
+    post: { id: true, title: true },
   };
 
   constructor(private dataSource: DataSource) {
@@ -29,6 +31,16 @@ export class CommentRepository extends Repository<Comment> {
       where: { post: { id: postId } },
       select: this.findOptionsSelect,
       relations: this.findOptionRelations,
+      order: { updatedAt: 'DESC' },
+    });
+  }
+
+  getByUsername(username: string): Promise<Comment[]> {
+    return this.find({
+      where: { user: { username } },
+      select: this.findOptionsSelect,
+      relations: this.findOptionRelations,
+      order: { updatedAt: 'DESC' },
     });
   }
 
